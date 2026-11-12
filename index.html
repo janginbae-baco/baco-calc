@@ -1415,22 +1415,24 @@
             tbl.innerHTML = '<tbody><tr><td class="text-xs text-gray-500 py-2">위 \'내 중도상환 계획\'에 [+ 중도상환 추가]로 시점과 금액을 넣으면, 갚을 때마다 월 납입이 어떻게 바뀌는지 순서대로 나옵니다.</td></tr></tbody>';
         } else {
             const r = rate / 12;
-            let t = `<thead><tr class="text-xs text-gray-500"><th class="text-left font-normal pb-1">단계</th><th class="text-right font-normal pb-1">갚는 돈</th><th class="text-right font-normal pb-1">갚은 뒤 남은 원금</th><th class="text-right font-normal pb-1">${mode === 0 ? '이후 월 납입' : '완납'}</th><th class="text-right font-normal pb-1">총 실부담</th></tr></thead><tbody>`;
-            t += `<tr class="border-t border-gray-800"><td class="py-1.5 text-gray-400">처음 (중도상환 없음)</td><td class="text-right text-gray-500">-</td><td class="text-right text-gray-300">${N(principal)}</td><td class="text-right text-white font-medium">${mode === 0 ? N(A.firstPay) : A.months + '개월'}</td><td class="text-right text-gray-300">${N(base + A.paid)}</td></tr>`;
+            const th = x => `<th class="text-right font-normal pb-1">${x}</th>`;
+            let t = `<thead><tr class="text-xs text-gray-500"><th class="text-left font-normal pb-1">단계</th>${th('갚는 돈')}${th('갚은 뒤 남은 원금')}${th('이후 월 납입')}${th('완납')}${th('총 실부담')}</tr></thead><tbody>`;
+            t += `<tr class="border-t border-gray-800"><td class="py-1.5 text-gray-400">처음 (중도상환 없음)</td><td class="text-right text-gray-500">-</td><td class="text-right text-gray-300">${N(principal)}</td><td class="text-right text-white font-medium">${N(A.firstPay)}</td><td class="text-right text-gray-300">${A.months}개월</td><td class="text-right text-gray-300">${N(base + A.paid)}</td></tr>`;
             let prevPay = A.firstPay, prevMonths = A.months;
             plan.forEach((x, k) => {
                 const R = simulateLoan(principal, rate, n, plan.slice(0, k + 1), mode);
                 const after = R.monthly[x.m - 1] ? R.monthly[x.m - 1].bal : 0;
-                const pay = after > 0 ? pmtOf(after, r, n - x.m) : 0;
-                const diff = mode === 0 ? (pay ? `<div class="text-[11px] text-green-400">${N(pay - prevPay)}</div>` : '') : `<div class="text-[11px] text-green-400">${R.months - prevMonths}개월</div>`;
-                const main = mode === 0 ? (pay ? N(pay) : '완납') : R.months + '개월';
-                t += `<tr class="border-t border-gray-800 bg-blue-950/40"><td class="py-1.5 text-white font-medium">${k + 1}. ${x.m}개월 뒤<div class="text-[11px] text-gray-500 font-normal">${mode === 0 ? (x.m + 1) + '개월째부터 적용' : '월 납입은 그대로'}</div></td><td class="text-right text-white">${N(x.a)}</td><td class="text-right text-gray-300">${N(after)}</td><td class="text-right text-white font-bold">${main}${diff}</td><td class="text-right text-white">${N(base + R.paid)}</td></tr>`;
-                if (mode === 0 && pay) prevPay = pay;
+                // 이후 월 납입: 기간 유지면 다시 계산된 금액, 월 납입 유지면 그대로(처음 금액)
+                const pay = after > 0 ? (mode === 0 ? pmtOf(after, r, n - x.m) : A.firstPay) : 0;
+                const dPay = pay ? (pay - prevPay ? `<div class="text-[11px] text-green-400">${N(pay - prevPay)}</div>` : '<div class="text-[11px] text-gray-500">그대로</div>') : '';
+                const dMon = R.months - prevMonths ? `<div class="text-[11px] text-green-400">${R.months - prevMonths}개월</div>` : '<div class="text-[11px] text-gray-500">그대로</div>';
+                t += `<tr class="border-t border-gray-800 bg-blue-950/40"><td class="py-1.5 text-white font-medium">${k + 1}. ${x.m}개월 뒤<div class="text-[11px] text-gray-500 font-normal">${x.m + 1}개월째부터 적용</div></td><td class="text-right text-white">${N(x.a)}</td><td class="text-right text-gray-300">${N(after)}</td><td class="text-right text-white font-bold">${pay ? N(pay) : '완납'}${dPay}</td><td class="text-right text-white font-medium">${R.months}개월${dMon}</td><td class="text-right text-white">${N(base + R.paid)}</td></tr>`;
+                if (pay) prevPay = pay;
                 prevMonths = R.months;
             });
             tbl.innerHTML = t + '</tbody>';
         }
-        document.getElementById('ppMatrixTitle').innerHTML = `내 계획대로 갚을 때마다 — <b class="text-white">${mode === 0 ? '월 납입이 어떻게 바뀌나' : '완납이 얼마나 당겨지나'}</b> <span class="text-xs">(단위 원 · 위 계획을 시점 순서대로 차례로 반영 · 초록 = 바로 앞 단계와 차이)</span>`;
+        document.getElementById('ppMatrixTitle').innerHTML = `내 계획대로 갚을 때마다 — <b class="text-white">월 납입이 어떻게 바뀌나</b> <span class="text-xs">(단위 원 · 위 계획을 시점 순서대로 차례로 반영 · 초록 = 바로 앞 단계와 차이 · 처리 방식: ${mode === 0 ? '기간 유지 · 월 납입 줄이기' : '월 납입 유지 · 기간 줄이기'})</span>`;
     }
 
     // 키보드 조작: 고르는 카드에 Tab 이동 + Enter/Space 선택
