@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F4F4F4">
+    <title>모델Y 구매 비용 산출기</title>
+    <!-- Tailwind CSS for premium styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Premium Fonts and Scrollbar */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        body { font-family: 'Noto Sans KR', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; background-color: #000; color: #f3f4f6; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        /* Smooth transitions */
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
+        
+        /* Custom Radio/Checkbox Hiding */
+        input[type="radio"], input[type="checkbox"] { display: none; }
+        
+        /* Interactive Cards */
+        .select-card { border: 1px solid #333; background-color: #111; cursor: pointer; }
+        .select-card:hover { border-color: #555; background-color: #1a1a1a; }
+        .select-card.active { border-color: #3b82f6; background-color: #1a2333; box-shadow: 0 0 0 1px #3b82f6; }
+        
+        /* Color Swatches */
+        .color-swatch { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #333; margin: 0 auto 8px auto; }
+        .color-card.active .color-swatch { border-color: #3b82f6; transform: scale(1.1); }
+        
+        /* Range Slider Styling */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 3px; outline: none; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: #333; border-radius: 3px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #fff; margin-top: -7px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+        input[type=range]:focus::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); }
+        
+        /* Number Input Styling */
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* AI Report styling */
+        .ai-gradient {
+            background: linear-gradient(145deg, #1a1525 0%, #0a0a0a 100%);
+            border: 1px solid #3b285c;
+        }
+        .car-stage { background: linear-gradient(180deg, #f4f5f7 0%, #e6e8eb 100%); }
+    .trim-thumb { background: #eceef1; }
+    .view-btn { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid #c9ccd1; color: #444; background: #fff; }
+    .view-btn.active { background: #171a20; color: #fff; border-color: #171a20; }
+</style>
+
+    <!-- ===== 밝은 테슬라 테마 (2026.11.12) — 계산 코드는 그대로, 색·글꼴·크기만 덮어씀 ===== -->
+    <style id="lightTheme">
+        :root {
+            --t-bg: #F4F4F4; --t-card: #FFFFFF; --t-line: #E2E3E3; --t-line2: #D0D1D2;
+            --t-ink: #171A20; --t-ink2: #393C41; --t-sub: #5C5E62; --t-mute: #6B6E73;
+            --t-blue: #3E6AE1; --t-blue-bg: #EEF2FD; --t-green: #12804A; --t-green-bg: #E7F5EC;
+            --t-red: #C0262D; --t-red-bg: #FDECEC; --t-amber: #8A5A00; --t-amber-bg: #FFF6E0; --t-amber-line: #F0D9A0;
+        }
+        html body { background: var(--t-bg) !important; color: var(--t-ink) !important; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+        ::-webkit-scrollbar-track { background: var(--t-bg); }
+        ::-webkit-scrollbar-thumb { background: #C5C6C8; }
+
+        /* 글자색 */
+        html body .text-white { color: var(--t-ink) !important; }
+        html body .text-gray-200, html body .text-gray-300 { color: var(--t-ink2) !important; }
+        html body .text-gray-400 { color: var(--t-sub) !important; }
+        html body .text-gray-500, html body .text-gray-600 { color: var(--t-mute) !important; }
+        html body .text-blue-300, html body .text-blue-400, html body .text-blue-500,
+        html body .text-purple-200, html body .text-purple-300, html body .text-purple-400 { color: var(--t-blue) !important; }
+        html body .text-green-400, html body .text-green-500 { color: var(--t-green) !important; }
+        html body .text-red-400 { color: var(--t-red) !important; }
+        html body .text-yellow-200, html body .text-yellow-400, html body .text-yellow-500 { color: var(--t-amber) !important; }
+
+        /* 바탕 */
+        html body .bg-\[\#111\], html body .bg-\[\#0a0a0a\], html body .bg-gray-900, html body .bg-gray-900\/50 { background: var(--t-card) !important; }
+        html body .bg-gray-800 { background: var(--t-bg) !important; }
+        html body .bg-gradient-to-b, html body .ai-gradient { background: var(--t-card) !important; border-color: var(--t-line) !important; }
+        html body .bg-blue-950\/40 { background: var(--t-blue-bg) !important; }
+        html body .bg-yellow-900\/20 { background: var(--t-amber-bg) !important; }
+        html body .bg-green-900\/30 { background: var(--t-green-bg) !important; }
+        html body .bg-red-900\/20 { background: var(--t-red-bg) !important; }
+        html body .bg-purple-600, html body .bg-blue-500 { background: var(--t-blue) !important; color: #fff !important; }
+        html body .bg-purple-600:hover { background: #2F55C4 !important; }
+        html body .bg-purple-600 *, html body .bg-blue-500 * { color: #fff !important; }
+        html body .shadow-purple-900\/50 { box-shadow: none !important; }
+
+        /* 선 */
+        html body .border-gray-600, html body .border-gray-700 { border-color: var(--t-line2) !important; }
+        html body .border-gray-800, html body .border-gray-800\/50 { border-color: var(--t-line) !important; }
+        html body .border-yellow-900\/40 { border-color: var(--t-amber-line) !important; }
+        html body .border-blue-500 { border-color: var(--t-blue) !important; }
+
+        /* 입력칸 */
+        html body input[type=text] { background: var(--t-card) !important; border-color: var(--t-line2) !important; color: var(--t-ink) !important; }
+        html body input[type=text]:focus { border-color: var(--t-blue) !important; box-shadow: 0 0 0 1px var(--t-blue) !important; }
+
+        /* 고르는 카드 */
+        .select-card { border: 1px solid var(--t-line2); background: var(--t-card); }
+        .select-card:hover { border-color: #A2A3A5; background: var(--t-card); }
+        .select-card.active { border-color: var(--t-blue); background: var(--t-card); box-shadow: 0 0 0 1px var(--t-blue); }
+        .select-card:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--t-blue); outline-offset: 2px; }
+        .color-swatch { border-color: var(--t-line2); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
+        .color-card.active .color-swatch { border-color: var(--t-blue); }
+
+        /* 막대 */
+        input[type=range]::-webkit-slider-runnable-track { background: var(--t-line2); }
+        input[type=range]::-webkit-slider-thumb { background: #fff; border: 1px solid var(--t-line2); box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+
+        /* 칸(섹션)을 흰 카드로 */
+        html body .space-y-10 > section { background: var(--t-card); border: 1px solid var(--t-line); border-radius: 16px; padding: 20px; }
+        html body .space-y-10 > section.car-stage { padding: 0; }
+        html body .space-y-10 > header { border-color: var(--t-line) !important; }
+        @media (min-width: 768px) { html body .space-y-10 > section { padding: 24px; } }
+        .car-stage { background: linear-gradient(180deg, #FFFFFF 0%, #EEEFF1 100%) !important; }
+        .trim-thumb { background: #F4F4F4; }
+
+        /* 글자 크기: 10~11px 안내 글을 12px로 (읽기 쉬움) */
+        html body .text-\[10px\], html body .text-\[11px\] { font-size: 12px !important; line-height: 1.5; }
+
+        /* 누르는 크기 */
+        .view-btn { min-height: 36px; min-width: 52px; font-weight: 500; }
+        .view-btn.active { background: var(--t-ink); border-color: var(--t-ink); }
+
+        /* 움직임 줄이기 설정 존중 */
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+        html body .ai-topline { background: var(--t-blue) !important; }
+        html body .summary-key { background: var(--t-card) !important; }
+        /* 최종 차량 가격 카드: 줄 간격 줄여 한눈에 */
+        html body .summary-detail { padding: 14px 20px 16px !important; }
+        html body .summary-detail h3 { margin-bottom: 0 !important; font-size: 12px; }
+        html body .summary-detail .text-3xl { font-size: 1.6rem !important; line-height: 1.2; }
+        html body .summary-detail .mb-6 { margin-bottom: 8px !important; }
+        html body .summary-detail .space-y-4 > * + * { margin-top: 5px !important; }
+        html body .summary-detail .space-y-4 > div { align-items: flex-start; font-size: 13px; line-height: 1.3; }
+        html body .summary-detail .space-y-4 .text-sm { font-size: 13px !important; line-height: 1.3; }
+        html body .summary-detail .space-y-4 .text-xs, html body .summary-detail #priceBreakdown { font-size: 11px !important; line-height: 1.3; }
+        html body .summary-detail .pt-3 { padding-top: 6px !important; }
+        html body .summary-detail .text-lg { font-size: 15px !important; }
+        html body .summary-key .flex.justify-between > span:last-child, html body .summary-detail .space-y-4 > div > span:last-child { white-space: nowrap; padding-left: 8px; }
+        /* 요약 카드 위계: 항목 이름은 짙은 검정, 부연 설명은 옅은 회색 */
+        html body .summary-detail .space-y-4 > div > span:first-child { color: var(--t-ink) !important; font-weight: 500; }
+        html body .summary-detail .space-y-4 > div > span:first-child .text-xs,
+        html body .summary-detail .space-y-4 > div > span:first-child [id]:not(#subsidyRowLabel) { color: #74777C !important; font-weight: 400; }
+        html body .summary-detail #subsidyRowLabel { color: var(--t-ink) !important; font-weight: 500; }
+        html body .summary-detail .space-y-4 > div > span:first-child .text-green-500 { color: #5E9C77 !important; }
+        html body .summary-detail #priceBreakdown { color: #74777C !important; }
+        html body .summary-detail h3 { color: var(--t-sub) !important; }
+        html body .summary-key .space-y-2 > div > span:first-child { color: var(--t-ink) !important; font-weight: 500; }
+        html body .summary-key .space-y-2 > div > span:first-child .text-xs { color: #74777C !important; font-weight: 400; }
+        /* 휴대폰: 요약은 아래 막대 + 열면 올라오는 시트 */
+        @media (max-width: 767px) {
+            html body .summary-panel { display: none; bottom: 64px !important; max-height: 78vh; overflow-y: auto; border-radius: 16px 16px 0 0 !important; }
+            html body.sheet-open .summary-panel { display: block; }
+            html body.sheet-open .summary-detail { display: block !important; }
+            html body { padding-bottom: 88px !important; }
+            html body #settleTable td > div { display: none; }               /* 결산표 작은 설명 숨김 */
+            html body #settleTable td:first-child { min-width: 96px; }
+            html body #settleTable td, html body #settleTable th { font-size: 12px; padding-left: 4px; padding-right: 4px; }
+            html body #ppYearTable, html body #ppMatrix { min-width: 560px; }  /* 옆으로 밀어서 보기 */
+            html body #ppMatrix.pp-empty { min-width: 0; }
+            html body #ppMatrix.pp-empty td { white-space: normal !important; }
+            html body #ppYearTable td, html body #ppYearTable th, html body #ppMatrix td, html body #ppMatrix th, html body #ppAtTable td:not(:first-child) { white-space: nowrap; padding-left: 6px; }
+            html body #ppAtTable { font-size: 12px; }
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen pb-32 md:pb-0">
+
+<div class="w-full mx-auto px-4 py-4 md:px-8 md:py-8 flex flex-col md:flex-row gap-8 xl:gap-10">
+    
+    <!-- Left Column: Configurations -->
+    <div class="flex-1 space-y-10">
+        
+        <header class="pb-6 border-b border-gray-800">
+            <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">Model Y <span class="text-gray-400 font-light text-xl">맞춤형 금융 계산기</span></h1>
+            <p class="text-gray-500 text-sm">트림, 색상, 결제 조건을 선택하여 최종 실구매 비용을 확인하세요.</p>
+            <div class="flex flex-wrap items-center gap-3 mt-3">
+                <span class="text-xs text-gray-500" id="saveNote">바꾼 설정은 이 브라우저에 자동 저장되어 다음에 열어도 그대로 나옵니다.</span>
+                <button type="button" onclick="resetSettings()" class="view-btn">↺ 내 계약 기본값으로 되돌리기</button>
+            </div>
+        </header>
+
+        <section class="car-stage rounded-2xl overflow-hidden">
+            <img id="carImage" alt="선택한 Model Y" class="w-full aspect-[16/9] object-contain transition-opacity duration-300">
+            <div class="flex flex-wrap items-center justify-between gap-2 px-4 pb-2">
+                <div class="text-xs text-gray-600" id="carImageNote"></div>
+                <div class="flex gap-1" id="viewContainer">
+                    <button type="button" class="view-btn" data-view="FRONT34" onclick="setView('FRONT34')">앞</button>
+                    <button type="button" class="view-btn" data-view="SIDE" onclick="setView('SIDE')">옆</button>
+                    <button type="button" class="view-btn" data-view="INTERIOR" onclick="setView('INTERIOR')">실내</button>
+                </div>
+            </div>
+            <p class="text-[10px] text-gray-500 px-4 pb-3">사진: 테슬라 코리아 구성 화면 이미지(tesla.com) · 실제 차량과 다를 수 있음</p>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-semibold mb-4 text-gray-200">1. 트림 선택</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="trimContainer">
+                <label class="select-card active rounded-xl p-5 flex flex-col justify-between" onclick="updateTrim(0)">
+                    <img class="trim-thumb w-full aspect-[16/9] object-contain mb-3 rounded-lg" data-trim="0" alt="">
+                    <div>
+                        <div class="text-sm text-gray-400 mb-1">Premium</div>
+                        <div class="text-lg font-bold text-white mb-4">RWD (후륜 구동)</div>
+                    </div>
+                    <div class="text-right font-medium text-blue-400">₩49,990,000</div>
+                </label>
+                <label class="select-card rounded-xl p-5 flex flex-col justify-between" onclick="updateTrim(1)">
+                    <img class="trim-thumb w-full aspect-[16/9] object-contain mb-3 rounded-lg" data-trim="1" alt="">
+                    <div>
+                        <div class="text-sm text-gray-400 mb-1">Premium</div>
+                        <div class="text-lg font-bold text-white mb-4">Long Range AWD (사륜)</div>
+                    </div>
+                    <div class="text-right font-medium text-blue-400">₩66,990,000</div>
+                </label>
+                <label class="select-card rounded-xl p-5 flex flex-col justify-between" onclick="updateTrim(2)">
+                    <img class="trim-thumb w-full aspect-[16/9] object-contain mb-3 rounded-lg" data-trim="2" alt="">
+                    <div>
+                        <div class="text-sm text-gray-400 mb-1">L</div>
+                        <div class="text-lg font-bold text-white mb-4">AWD (사륜 구동)</div>
+                    </div>
+                    <div class="text-right font-medium text-blue-400">₩72,990,000</div>
+                </label>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-semibold mb-4 text-gray-200">2. 외장 색상 및 인테리어</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6" id="colorContainer">
+                <!-- Colors will be injected by JS based on trim -->
+            </div>
+            <div class="text-sm text-gray-400 mb-2">휠</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6" id="wheelContainer"></div>
+            
+            <label class="select-card rounded-xl p-4 flex items-center justify-between transition-all" id="interiorCard" onclick="toggleInterior()">
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 rounded-full border border-gray-600 flex items-center justify-center bg-gray-800" id="interiorCheckbox"></div>
+                    <div>
+                        <div class="text-white font-medium">젠 그레이 인테리어</div>
+                        <div class="text-xs text-gray-500">화이트/블랙 톤 대비 추가 옵션</div>
+                    </div>
+                </div>
+                <div class="text-sm font-medium text-blue-400">+ ₩1,929,000</div>
+            </label>
+        </section>
+
+        <section>
+            <div class="mb-4">
+                <h2 class="text-xl font-semibold text-gray-200">3. 오토파일럿 패키지</h2>
+                <p class="text-xs text-gray-500 mt-1">유럽 안전기준 적용</p>
+            </div>
+            
+            <div class="flex flex-col gap-3" id="autopilotContainer">
+                <!-- Basic Autopilot -->
+                <label class="select-card active rounded-xl p-5 flex flex-col transition-all" onclick="updateAutopilot(0)">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="text-lg font-bold text-white">오토파일럿</div>
+                        <div class="font-medium text-gray-400">포함</div>
+                    </div>
+                    <div class="text-sm text-gray-400">오토스티어 및 트래픽 어웨어 크루즈 컨트롤이 포함 되어 있습니다.</div>
+                </label>
+                
+                <!-- Enhanced Autopilot -->
+                <label class="select-card rounded-xl p-5 flex flex-col transition-all" onclick="updateAutopilot(1)">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="text-lg font-bold text-white">향상된 오토파일럿</div>
+                        <div class="font-medium text-blue-400">₩4,522,000</div>
+                    </div>
+                    <div class="text-sm text-gray-400">기본 오토파일럿 기능에 더해, 운전자가 요청할 경우 내비게이트 온 오토파일럿, 자동 차선 변경, 자동 주차, 간단 차량 호출, 향상된 스마트 차량 호출 기능이 포함됩니다.</div>
+                </label>
+                
+                <!-- FSD -->
+                <label class="select-card rounded-xl p-5 flex flex-col transition-all" onclick="updateAutopilot(2)">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="text-lg font-bold text-white">FSD(감독형) 월 구독</div>
+                        <div class="font-medium text-blue-400">₩150,000 /월</div>
+                    </div>
+                    <div class="text-sm text-gray-400">향상된 오토파일럿기능을 포함하며, 향후 업데이트를 통해 차량이 최소한의 운전자 개입으로 거의 모든 도로에서 스스로 주행할 수 있도록 지원할 예정입니다.</div>
+                    <div class="mt-3 pt-3 border-t border-gray-800 flex items-center justify-between text-xs" onclick="toggleFsdLump(event)">
+                        <span class="flex items-center gap-2 text-gray-400">
+                            <span id="fsdLumpBox" class="w-4 h-4 rounded border border-gray-600 bg-gray-800 flex items-center justify-center"></span>
+                            일시불 결제
+                        </span>
+                        <span class="text-gray-400" id="fsdLumpPrice">₩9,043,000</span>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Autopilot Disclaimer -->
+            <div class="mt-5 p-4 bg-gray-900/50 rounded-lg text-[11px] text-gray-500 leading-relaxed border border-gray-800">
+                <!-- 기본 오토파일럿 (항목 없음) -->
+                <div id="descAutopilot0" class="hidden"></div>
+                
+                <!-- 향상된 오토파일럿 상세 -->
+                <ul id="descAutopilot1" class="list-disc pl-4 mb-3 space-y-1 hidden">
+                    <li>자동 차선 변경: 자동차 전용 도로에서만 가능. 운전자의 승인 (손을 통해 핸들에 저항을 주는 행위 및 방향지시등 작동) 후 3-5초 이내에 차선변경을 할 수 없는 경우, 자동으로 차선 변경 취소</li>
+                    <li>내비게이트 온 오토파일럿: 내비게이트 온 오토파일럿 사용 중 차선 변경 시, 운전자의 승인 (손을 통해 핸들에 저항을 주는 행위 및 방향지시등 작동) 없이는 작동하지 않음</li>
+                    <li>향상된 스마트 차량 호출: 6m 이내 거리 유지 필요</li>
+                </ul>
+
+                <!-- FSD 상세 -->
+                <ul id="descAutopilot2" class="list-disc pl-4 mb-3 space-y-1 hidden">
+                    <li>풀 셀프 드라이빙(감독형)은 모든 차량에 적용되는 기능이 아니며, 일부 대상 차량에 한하여 적용됩니다.</li>
+                </ul>
+
+                <p>현재 제공되는 기능은 운전자의 적극적인 주의를 필요로 하며, 차량을 자율주행차로 전환하지는 않습니다. 일부 기능은 방향 지시등 조작이 필요하며, 작동 범위는 제한됩니다. 이러한 기능을 상용화하기 위해서는 차량의 자율주행 능력이 인간 운전자의 역량을 현저히 상회함을 입증할 수 있도록 수십억 마일 규모의 도로 주행 시험이 필요하며, 일부 관할 지역에서는 규제 인가에 더 오랜 시간이 소요될 수 있습니다. 셀프 드라이빙 기능이 발전함에 따라 무선 소프트웨어 업데이트를 통해 차량도 함께 업그레이드됩니다.</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="flex justify-between items-end mb-4">
+                <h2 class="text-xl font-semibold text-gray-200">4. 할부 조건 (삼성카드 카드할부 · 원리금균등상환)</h2>
+                <span class="text-xs text-green-400 bg-green-900/30 px-2 py-1 rounded">중도상환수수료 0원</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="termContainer">
+                <label class="select-card active rounded-lg p-3 text-center" onclick="updateTerm(0)">
+                    <div class="font-bold text-white">60개월</div><div class="text-xs text-red-400 mt-1">연 4.8%</div>
+                </label>
+                <label class="select-card rounded-lg p-3 text-center" onclick="updateTerm(1)">
+                    <div class="font-bold text-white">48개월</div><div class="text-xs text-red-400 mt-1">연 4.7%</div>
+                </label>
+                <label class="select-card rounded-lg p-3 text-center" onclick="updateTerm(2)">
+                    <div class="font-bold text-white">36개월</div><div class="text-xs text-red-400 mt-1">연 4.7%</div>
+                </label>
+                <label class="select-card rounded-lg p-3 text-center" onclick="updateTerm(3)">
+                    <div class="font-bold text-white">24개월</div><div class="text-xs text-red-400 mt-1">연 4.6%</div>
+                </label>
+                <label class="select-card rounded-lg p-3 text-center" onclick="updateTerm(4)">
+                    <div class="font-bold text-white">12개월</div><div class="text-xs text-red-400 mt-1">연 4.5%</div>
+                </label>
+                <label class="select-card rounded-lg p-3 text-center" onclick="updateTerm(5)">
+                    <div class="font-bold text-white">6개월</div><div class="text-xs text-red-400 mt-1">연 4.5%</div>
+                </label>
+                <label class="select-card rounded-lg p-3 text-center" onclick="updateTerm(6)">
+                    <div class="font-bold text-white">3개월</div><div class="text-xs text-red-400 mt-1">연 4.5%</div>
+                </label>
+            </div>
+            <p class="text-[11px] text-gray-500 mt-2">이벤트 할부금리(고정) 2026.11.15까지 · 이후 정상 금리 연 9.0% · 원리금균등분할 · 최대 한도 7,000만원 · 2026.11 삼성카드 안내 기준</p>
+            <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
+                <span class="text-gray-400">적용 금리</span>
+                <input type="text" inputmode="decimal" id="customRateInput" placeholder="표 금리" oninput="setCustomRate(this.value)" class="bg-gray-800 border border-gray-700 text-white text-right w-20 rounded px-2 py-1" aria-label="적용 금리 직접 입력(연 %)"><span class="text-gray-400">%</span>
+                <button type="button" class="view-btn" onclick="setCustomRate(0); document.getElementById('customRateInput').value=''">이벤트 금리</button>
+                <button type="button" class="view-btn" onclick="document.getElementById('customRateInput').value='9.0'; setCustomRate(9.0)">정상 9.0%</button>
+                <span class="text-xs text-gray-500" id="rateNowNote"></span>
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1">이벤트 금리는 2026.11.15까지입니다. 인도·카드 결제일(예: 11/30)에 적용되는 금리를 삼성카드(1688-3001)에서 확인한 뒤 여기에 넣으세요.</p>
+            <p class="text-[11px] text-red-400 mt-1 hidden" id="limitWarn">할부 원금이 카드할부 최대 한도(7,000만원)를 넘습니다. 선수금을 늘려 주세요.</p>
+            <div class="mt-4">
+                <div class="text-sm text-gray-400 mb-2">선수금 캐시백</div>
+                <div class="grid grid-cols-2 gap-3" id="cashbackContainer">
+                    <label class="select-card active rounded-lg p-3 text-center" onclick="updateCashback(0)">
+                        <div class="font-bold text-white">카드 계속 사용</div><div class="text-xs text-green-400 mt-1">선수금의 1.2%</div>
+                    </label>
+                    <label class="select-card rounded-lg p-3 text-center" onclick="updateCashback(1)">
+                        <div class="font-bold text-white">일회성 결제</div><div class="text-xs text-green-400 mt-1">선수금의 1.0%</div>
+                    </label>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="text-sm text-gray-400 mb-2">차량 등록(취득) 시점 — 전기차 취득세 감면</div>
+                <div class="grid grid-cols-2 gap-3" id="regContainer">
+                    <label class="select-card active rounded-lg p-3 text-center" onclick="updateReg(0)">
+                        <div class="font-bold text-white">2026.12.31까지</div><div class="text-xs text-green-400 mt-1">감면 최대 140만원</div>
+                    </label>
+                    <label class="select-card rounded-lg p-3 text-center" onclick="updateReg(1)">
+                        <div class="font-bold text-white">2027년 이후</div><div class="text-xs text-yellow-400 mt-1">감면 최대 70만원 (정부안·국회 통과 전)</div>
+                    </label>
+                </div>
+                <p class="text-[11px] text-gray-500 mt-2">취득세 = 차량가(부가세 제외) × 7% − 전기차 감면 · 도시철도채권 매입 감면도 2026.12.31까지 · 2026.11 한국에너지공단·행정안전부 개편안 기준</p>
+            </div>
+        </section>
+
+        <section class="space-y-6 bg-[#0a0a0a] border border-gray-800 p-5 md:p-6 rounded-2xl">
+            <h2 class="text-xl font-semibold text-gray-200 border-b border-gray-800 pb-3">5. 초기 자금 및 부대 비용 설정</h2>
+            
+            <!-- Down Payment Slider -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-sm text-gray-400">선수금 (할부원금 조절)</label>
+                    <div class="flex items-center">
+                        <input type="text" inputmode="numeric" id="downPaymentInput" value="25,000,000" oninput="handleInputChange('downPayment')" class="bg-gray-800 border border-gray-700 text-white text-right w-36 rounded-lg px-3 py-1.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none font-bold text-lg transition-all"> 
+                        <span class="text-gray-400 text-sm ml-2">원</span>
+                    </div>
+                </div>
+                <input type="range" id="downPaymentSlider" min="0" max="70000000" step="500000" value="25000000" oninput="handleSliderChange('downPayment')">
+                <div class="flex justify-between mt-1 text-xs text-gray-600">
+                    <span>최소 (0원)</span>
+                    <button onclick="targetMonthly500k()" class="bg-gray-800 hover:bg-gray-700 text-blue-400 px-3 py-1 rounded transition-colors">⚡ 월 50만원 맞춤 세팅</button>
+                    <span>최대</span>
+                </div>
+
+                <!-- 잔금 = 선수금 + 카드 할부금액 (차량가·보조금에 따라 함께 바뀜) -->
+                <div class="mt-4 p-4 rounded-xl border border-gray-800 bg-gray-900">
+                    <div class="flex justify-between items-center text-sm mb-2">
+                        <span class="text-gray-400">잔금 <span class="text-xs text-gray-500">(차량가 − 계약금 − 보조금)</span></span>
+                        <span class="text-white font-bold" id="balanceOutput">₩0</span>
+                    </div>
+                    <div class="flex h-3 rounded-full overflow-hidden bg-gray-800 mb-2" aria-hidden="true">
+                        <div id="splitDown" class="h-full" style="background:#171A20;width:0%"></div>
+                        <div id="splitLoan" class="h-full" style="background:#3E6AE1;width:0%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs mb-3">
+                        <span class="text-gray-400"><span class="inline-block w-2 h-2 rounded-full align-middle mr-1" style="background:#171A20"></span>선수금 <span id="splitDownPct">0%</span></span>
+                        <span class="text-gray-400"><span class="inline-block w-2 h-2 rounded-full align-middle mr-1" style="background:#3E6AE1"></span>카드 할부 <span id="splitLoanPct">0%</span></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm text-gray-400" for="loanInput">카드 할부금액 <span class="text-xs text-gray-500">(직접 입력하면 선수금이 맞춰짐)</span></label>
+                        <div class="flex items-center">
+                            <input type="text" inputmode="numeric" id="loanInput" value="0" oninput="handleLoanInput()" class="bg-gray-800 border border-gray-700 text-white text-right w-36 rounded-lg px-3 py-1.5 outline-none font-bold text-lg">
+                            <span class="text-gray-400 text-sm ml-2">원</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-2" id="loanLimitNote">카드할부 한도 7,000만원 중 0%</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-800/50">
+                <!-- Insurance -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm text-gray-400">초기 자동차 보험료</label>
+                        <div class="flex items-center">
+                            <input type="text" inputmode="numeric" id="insuranceInput" value="1,300,000" oninput="handleInputChange('insurance')" class="bg-[#111] border border-gray-700 text-white text-right w-32 rounded px-2 py-1 focus:border-blue-500 outline-none font-medium transition-colors"> <span class="text-gray-500 text-sm ml-1">원</span>
+                        </div>
+                    </div>
+                    <input type="range" id="insuranceSlider" min="800000" max="5000000" step="50000" value="1300000" oninput="handleSliderChange('insurance')">
+                    <div class="text-xs text-green-500 mt-1">※ 운전병 경력 인정시 큰 폭 할인</div>
+                </div>
+
+                <!-- Subsidy -->
+                <div>
+                    <div class="grid grid-cols-3 gap-2 mb-3" id="subsidyModeContainer">
+                        <label class="select-card active rounded-lg p-2 text-center" onclick="updateSubsidyMode(0)">
+                            <div class="font-bold text-white text-sm">보조금</div><div class="text-[10px] text-gray-400 mt-0.5">서울 국비+시비</div>
+                        </label>
+                        <label class="select-card rounded-lg p-2 text-center" onclick="updateSubsidyMode(1)">
+                            <div class="font-bold text-white text-sm">테조금</div><div class="text-[10px] text-gray-400 mt-0.5">테슬라 자체 지원</div>
+                        </label>
+                        <label class="select-card rounded-lg p-2 text-center" onclick="updateSubsidyMode(2)">
+                            <div class="font-bold text-white text-sm">보포자</div><div class="text-[10px] text-gray-400 mt-0.5">보조금 포기 (0원)</div>
+                        </label>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm text-gray-400">예상 보조금 <span id="subsidyModeLabel">(서울 국비+시비)</span></label>
+                        <div class="flex items-center">
+                            <input type="text" inputmode="numeric" id="subsidyInput" value="2,210,000" oninput="handleInputChange('subsidy')" class="bg-[#111] border border-gray-700 text-white text-right w-32 rounded px-2 py-1 focus:border-blue-500 outline-none font-medium transition-colors"> <span class="text-gray-500 text-sm ml-1">원</span>
+                        </div>
+                    </div>
+                    <input type="range" id="subsidySlider" min="0" max="10000000" step="10000" value="2210000" oninput="handleSliderChange('subsidy')">
+                    <p class="text-[11px] text-gray-500 mt-2" id="subsidyNote">국비 ₩1,700,000 + 서울시 ₩510,000</p>
+                    <p class="text-[11px] text-gray-500 mt-1">막대로 금액을 직접 줄이거나 늘릴 수 있습니다 (예산 소진·감액 대비). 방식을 다시 누르면 기준 금액으로 돌아갑니다.</p>
+                    <details class="mt-1 text-[11px] text-gray-500"><summary class="cursor-pointer text-gray-400">ⓘ 보조금 기준·자격 자세히</summary><p class="mt-1">2026 서울시 기준(ev.or.kr 지자체별 차종 보조금, 2026.11 조회) · 청년 생애 첫차 추가지원(국비의 20%)은 만 19~34세만 해당 → 만 35세는 미해당 · 생애 첫 차 구매자는 우선순위 물량 신청 가능 · 내연차 전환지원금은 기존 차량이 없으면 해당 없음 · 서울 지급신청 기한 2026.12.9, 예산 소진 시 조기 마감</p></details>
+                </div>
+
+                <!-- Tinting -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm text-gray-400">틴팅 (썬팅) 시공</label>
+                        <div class="flex items-center">
+                            <input type="text" inputmode="numeric" id="tintingInput" value="1,000,000" oninput="handleInputChange('tinting')" class="bg-[#111] border border-gray-700 text-white text-right w-32 rounded px-2 py-1 focus:border-blue-500 outline-none font-medium transition-colors"> <span class="text-gray-500 text-sm ml-1">원</span>
+                        </div>
+                    </div>
+                    <input type="range" id="tintingSlider" min="0" max="5000000" step="50000" value="1000000" oninput="handleSliderChange('tinting')">
+                </div>
+
+                <!-- PPF -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm text-gray-400">PPF 시공</label>
+                        <div class="flex items-center">
+                            <input type="text" inputmode="numeric" id="ppfInput" value="3,000,000" oninput="handleInputChange('ppf')" class="bg-[#111] border border-gray-700 text-white text-right w-32 rounded px-2 py-1 focus:border-blue-500 outline-none font-medium transition-colors"> <span class="text-gray-500 text-sm ml-1">원</span>
+                        </div>
+                    </div>
+                    <input type="range" id="ppfSlider" min="0" max="5000000" step="50000" value="3000000" oninput="handleSliderChange('ppf')">
+                </div>
+                
+                <!-- Glass Coating -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm text-gray-400">유리막 코팅</label>
+                        <div class="flex items-center">
+                            <input type="text" inputmode="numeric" id="glassCoatingInput" value="0" oninput="handleInputChange('glassCoating')" class="bg-[#111] border border-gray-700 text-white text-right w-32 rounded px-2 py-1 focus:border-blue-500 outline-none font-medium transition-colors"> <span class="text-gray-500 text-sm ml-1">원</span>
+                        </div>
+                    </div>
+                    <input type="range" id="glassCoatingSlider" min="0" max="5000000" step="50000" value="0" oninput="handleSliderChange('glassCoating')">
+                </div>
+
+                <!-- Soundproofing -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm text-gray-400">소음차단재 시공</label>
+                        <div class="flex items-center">
+                            <input type="text" inputmode="numeric" id="soundproofingInput" value="0" oninput="handleInputChange('soundproofing')" class="bg-[#111] border border-gray-700 text-white text-right w-32 rounded px-2 py-1 focus:border-blue-500 outline-none font-medium transition-colors"> <span class="text-gray-500 text-sm ml-1">원</span>
+                        </div>
+                    </div>
+                    <input type="range" id="soundproofingSlider" min="0" max="5000000" step="50000" value="0" oninput="handleSliderChange('soundproofing')">
+                </div>
+
+                <!-- Leather Coating -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm text-gray-400">가죽 코팅</label>
+                        <div class="flex items-center">
+                            <input type="text" inputmode="numeric" id="leatherCoatingInput" value="0" oninput="handleInputChange('leatherCoating')" class="bg-[#111] border border-gray-700 text-white text-right w-32 rounded px-2 py-1 focus:border-blue-500 outline-none font-medium transition-colors"> <span class="text-gray-500 text-sm ml-1">원</span>
+                        </div>
+                    </div>
+                    <input type="range" id="leatherCoatingSlider" min="0" max="5000000" step="50000" value="0" oninput="handleSliderChange('leatherCoating')">
+                </div>
+
+                <!-- Registration Fees -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm text-gray-400">차량 등록 부대비용</label>
+                        <div class="flex items-center">
+                            <input type="text" inputmode="numeric" id="registrationFeeInput" value="100,000" oninput="handleInputChange('registrationFee')" class="bg-[#111] border border-gray-700 text-white text-right w-32 rounded px-2 py-1 focus:border-blue-500 outline-none font-medium transition-colors"> <span class="text-gray-500 text-sm ml-1">원</span>
+                        </div>
+                    </div>
+                    <input type="range" id="registrationFeeSlider" min="0" max="500000" step="10000" value="100000" oninput="handleSliderChange('registrationFee')">
+                    <div class="text-xs text-gray-500 mt-1">※ 번호판, 인지/증지대 등</div>
+                </div>
+
+                <!-- Others -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm text-gray-400">기타 시공</label>
+                        <div class="flex items-center">
+                            <input type="text" inputmode="numeric" id="othersInput" value="0" oninput="handleInputChange('others')" class="bg-[#111] border border-gray-700 text-white text-right w-32 rounded px-2 py-1 focus:border-blue-500 outline-none font-medium transition-colors"> <span class="text-gray-500 text-sm ml-1">원</span>
+                        </div>
+                    </div>
+                    <input type="range" id="othersSlider" min="0" max="5000000" step="50000" value="0" oninput="handleSliderChange('others')">
+                </div>
+            </div>
+        </section>
+
+        <!-- ✨ Gemini AI Report Section -->
+        <section class="bg-[#0a0a0a] border border-gray-800 p-5 md:p-6 rounded-2xl">
+            <h2 class="text-xl font-semibold text-gray-200 mb-1">세금·비용 결산 — 2026년 vs 2027년 등록</h2>
+            <p class="text-xs text-gray-500 mb-4">위에서 고른 차량·보조금 기준 · 파란 칸 = 지금 고른 등록 시점</p>
+            <div id="settleTable"></div>
+            <details class="mt-4 text-xs text-gray-400">
+                <summary class="cursor-pointer text-gray-300">개별소비세에 들어가는 세금과 2026→2027 바뀌는 점</summary>
+                <ul class="list-disc pl-5 mt-2 space-y-1">
+                    <li><b>개별소비세</b>: 공장도(수입차는 수입신고) 가격의 5%. 승용차 3.5% 인하는 2026.6.30 끝나 지금은 5%.</li>
+                    <li><b>교육세</b>: 개별소비세의 30%.</li>
+                    <li><b>부가가치세</b>: (가격+개소세+교육세)의 10% — 그래서 개소세가 오르면 부가세도 같이 오름.</li>
+                    <li><b>전기차 감면 (2026.12.31까지)</b>: 개소세 최대 300만 → 교육세 90만·부가세 39만 포함 최대 429만 효과. 이 감면은 테슬라 판매가에 이미 들어가 있음.</li>
+                    <li><b>2027년 (정부안, 국회 미확정)</b>: 개소세 감면 200만(→ 최대 286만 효과), 2028년 100만, 2029년 폐지 · 취득세 감면 140만 → 70만. 1년 연장 법안도 국회에 있어 바뀔 수 있음.</li>
+                    <li><b>취득세</b>: 차량 최종 결제금액(옵션·FSD 일시불 포함, 부가세 제외)의 7%에서 전기차 감면을 뺌. 보조금은 빼지 않음. 그래서 옵션을 더하면 취득세도 오름.</li>
+                    <li>개소세 칸은 판매가로 거꾸로 셈한 '많아야 이 정도' 추정입니다. 테슬라가 2027년에 실제로 가격을 얼마나 올릴지는 알 수 없습니다.</li>
+                </ul>
+            </details>
+        </section>
+
+
+        <section class="bg-[#0a0a0a] border border-gray-800 p-5 md:p-6 rounded-2xl" id="prepaySection">
+            <h2 class="text-xl font-semibold text-gray-200 mb-1">중도상환 계산기 <span class="text-sm font-normal text-green-400">삼성카드 카드할부 · 원리금균등 · 중도상환수수료 0원</span></h2>
+            <p class="text-xs text-gray-500 mb-4">위에서 고른 차량·선수금·금리의 할부 원금(<b id="ppPrincipal">₩0</b>, <span id="ppTerm">60개월 / 4.8%</span>)을 자동으로 가져옵니다. 중도상환은 그 달 할부금을 낸 뒤 원금에서 바로 빠진다고 계산합니다.</p>
+
+            <div class="text-sm text-gray-400 mb-2">중도상환 후 처리</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4" id="ppModeContainer">
+                <label class="select-card active rounded-lg p-3" onclick="setPrepayMode(0)">
+                    <div class="font-bold text-white text-sm">기간 유지 · 월 납입 줄이기</div><div class="text-xs text-gray-400 mt-0.5">남은 개월은 그대로, 매달 내는 돈이 줄어듦</div>
+                </label>
+                <label class="select-card rounded-lg p-3" onclick="setPrepayMode(1)">
+                    <div class="font-bold text-white text-sm">월 납입 유지 · 기간 줄이기</div><div class="text-xs text-gray-400 mt-0.5">매달 같은 돈을 내고 더 일찍 끝남 (이자가 더 줄어듦)</div>
+                </label>
+            </div>
+            <div class="text-xs text-gray-500 -mt-2 mb-4 space-y-0.5">
+                <div>✔ 삼성카드 공식 안내: 원리금균등상환 · 중도상환수수료 0원 · 언제든 상환 가능 · 금리는 할부 기간별 고정</div>
+                <div>? 일부만 갚은 뒤 '월 납입 감소'인지 '기간 단축'인지는 공개 안내가 없어 두 방식을 모두 보여 줍니다 (상담센터 1688-3001 확인). 앱에서는 '이용건별 결제'로 할부 잔액을 갚아야 미래 회차 원금이 줄어듭니다.</div>
+            </div>
+
+            <div class="text-sm text-gray-400 mb-1">내 중도상환 계획</div>
+            <div class="text-xs text-gray-500 mb-2">시점은 모두 <b>첫 납부부터 센 회차</b>입니다. 예: 6 → 6번째 할부금 낸 뒤, 18 → 18번째 낸 뒤 (앞 상환 시점에 더하지 않음)</div>
+            <div id="ppRows" class="space-y-2 mb-2"></div>
+            <button type="button" class="view-btn mb-5" onclick="addPrepay()">+ 중도상환 추가</button>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <div class="text-sm text-gray-400" id="ppMatrixTitle">한 번만 갚는다면? — 금액 × 시기별 <b class="text-white">상환 후 월 납입</b> (괄호: 총 실부담)</div>
+            </div>
+            <div class="overflow-x-auto mb-5"><table class="w-full text-sm" id="ppMatrix"></table></div>
+            <div class="grid grid-cols-2 gap-3 mb-5" id="ppCompare"></div>
+
+            <div class="rounded-xl border border-gray-800 p-4 mb-5">
+                <div class="flex flex-wrap items-center gap-2 text-sm mb-3">
+                    <span class="text-white font-medium">시점 조회:</span>
+                    <input type="text" inputmode="numeric" id="ppAtMonth" value="24" oninput="renderPrepay(); saveSettings()" class="bg-gray-800 border border-gray-700 text-white text-right w-16 rounded px-2 py-1" aria-label="납부한 개월 수">
+                    <span class="text-gray-400">개월 납부했을 때 남은 금액</span>
+                </div>
+                <div class="overflow-x-auto"><table class="w-full text-sm" id="ppAtTable"></table></div>
+            </div>
+
+            <div class="text-sm text-gray-400 mb-2">연도별 남은 원금 · 그 해 이자</div>
+            <div class="overflow-x-auto mb-6"><table class="w-full text-sm" id="ppYearTable"></table></div>
+
+
+            <p class="text-xs text-gray-500 mt-3">총 실부담 = ① 인도 전 현금 + ② 시공비 − ③ 캐시백 + 할부로 낸 돈 전부(월 납입 + 중도상환). 이자는 매달 남은 원금 × 연이율 ÷ 12(원 미만 버림)로 셈한 추정입니다.</p>
+        </section>
+
+        <div class="h-10"></div> <!-- Spacer for mobile scroll -->
+    </div>
+
+    <!-- Right Column: Sticky Summary -->
+    <div class="w-full md:w-[400px] xl:w-[440px] shrink-0">
+        <div id="summaryPanel" class="bg-[#111] border border-gray-700 rounded-2xl overflow-hidden shadow-2xl z-30 fixed bottom-0 summary-panel left-0 right-0 md:sticky md:top-6 md:bottom-auto md:max-h-[calc(100vh-3rem)] md:overflow-y-auto">
+            <div class="p-4 md:p-6 bg-[#0a0a0a] summary-key">
+                <div class="mb-3 md:mb-5 flex md:block items-end justify-between gap-3">
+                    <div class="text-sm font-medium text-gray-400 mb-2">월 예상 납부금 <span class="text-xs font-normal" id="termRateLabel">(60개월 / 4.8%)</span></div>
+                    <div class="text-4xl font-bold text-blue-500 tracking-tight" id="monthlyPaymentOutput">₩0</div>
+                    <div class="text-xs text-gray-400 mt-2 hidden" id="fsdMonthlyOutput"></div>
+                </div>
+                
+                <div class="p-4 bg-gray-900 rounded-xl border border-gray-700">
+                    <div class="text-sm font-medium text-gray-400 mb-1">① 인도 전까지 필요한 현금</div>
+                    <div class="text-xs text-gray-500 mb-2">계약금 + 선수금 + 취득세 + 등록비 + 보험료 (등록은 인도 전에 함)</div>
+                    <div class="text-2xl font-bold text-white text-right" id="initialCashOutput">₩0</div>
+                </div>
+                <div class="mt-3 space-y-2 text-sm">
+                    <div class="flex justify-between"><span class="text-gray-400">② 인도 후 시공비 <span class="text-xs text-gray-500">(틴팅·PPF·코팅 등)</span></span><span class="text-white font-medium" id="afterCostOutput">₩0</span></div>
+                    <div class="flex justify-between"><span class="text-gray-400">③ 나중에 돌려받는 캐시백 <span class="text-xs text-gray-500">(20일~다음 달 10일 입금)</span></span><span class="text-green-400 font-medium" id="cashbackLaterOutput">+ ₩0</span></div>
+                    <div class="flex justify-between items-center pt-2 mt-1 border-t border-gray-800"><span class="text-white font-bold">④ 최종 초기비용 <span class="text-xs text-gray-500 font-normal">(① + ② − ③)</span></span><span class="text-white font-bold text-lg" id="finalInitialOutput">₩0</span></div>
+                    <div class="pt-2 mt-1 border-t border-gray-800">
+                        <button type="button" class="w-full flex justify-between items-center text-left" onclick="togglePpSummary()" aria-expanded="true" id="ppSumToggle">
+                            <span class="text-white font-bold">중도상환 반영 <span class="text-xs text-gray-500 font-normal" id="ppSumHead"></span></span>
+                            <span class="text-xs text-gray-500" id="ppSumIcon">접기 ▲</span>
+                        </button>
+                        <div id="ppSumBody" class="mt-1 space-y-1"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="summary-detail hidden md:block p-6 bg-gradient-to-b from-gray-800 to-[#111] border-t border-gray-800">
+                <button type="button" class="w-full flex justify-between items-center text-left" onclick="toggleDetail()" aria-expanded="true" id="detailToggle"><h3 class="text-sm font-medium text-gray-300 mb-1">최종 차량 가격 (차량만)</h3><span class="text-xs text-gray-500" id="detailToggleIcon">접기 ▲</span></button>
+                <div class="text-3xl font-bold text-white mb-1" id="totalPriceOutput">₩49,990,000</div>
+                <div id="detailBody"><div class="text-xs text-gray-500 mb-6" id="priceBreakdown"></div>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 text-sm">계약금 (고정)</span>
+                        <span class="text-white font-medium">₩5,000,000</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 text-sm"><span id="subsidyRowLabel">보조금 (서울)</span><br><span class="text-xs text-gray-500">현금이 아니라 차값(잔금)에서 빠짐</span></span>
+                        <span class="text-green-400 font-medium" id="subsidyOutput">- ₩0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 text-sm">선수금</span>
+                        <span class="text-white font-medium" id="downPaymentOutput">₩25,000,000</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 text-sm">할부 원금<br><span class="text-xs text-gray-500">차량가 − 계약금 − 보조금 − 선수금</span></span>
+                        <span class="text-white font-medium" id="principalOutput">₩0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 text-sm">할부 이자 합계</span>
+                        <span class="text-white font-medium" id="interestOutput">₩0</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-700">
+                        <span class="text-gray-400 text-sm">예상 취득세<br><span class="text-xs text-gray-600" id="taxDetail">(전기차 140만 감면 적용)</span></span>
+                        <span class="text-white font-medium" id="taxOutput">₩0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 text-sm">등록비 · 보험료</span>
+                        <span class="text-white font-medium"><span id="regFeeOutput">₩0</span> · <span id="insuranceOutput">₩0</span></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 text-sm">선수금 캐시백<br><span class="text-xs text-green-500" id="cashbackRateLabel">(1.2% 현금 환급 · 카드 계속 사용)</span></span>
+                        <span class="text-green-400 font-bold" id="cashbackOutput">- ₩0</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-700">
+                        <span class="text-white text-sm font-bold">총 실부담 (이자 포함)<br><span class="text-xs text-gray-500 font-normal">① + 월 납입 전부 + ② − ③</span></span>
+                        <span class="text-white font-bold text-lg" id="totalCostOutput">₩0</span>
+                    </div>
+                </div></div><!-- /detailBody -->
+            </div>
+        </div>
+    </div>
+
+</div>
+
+    <!-- 휴대폰 전용: 아래 고정 한 줄 막대 -->
+    <div id="mobileBar" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-2 flex items-center justify-between gap-3" style="box-shadow:0 -4px 16px rgba(0,0,0,.08)">
+        <div class="min-w-0">
+            <div class="text-[11px] text-gray-500 leading-tight">월 납입</div>
+            <div class="text-lg font-bold leading-tight" style="color:#3E6AE1" id="mbMonthly">₩0</div>
+        </div>
+        <div class="min-w-0 text-right">
+            <div class="text-[11px] text-gray-500 leading-tight">최종 초기비용</div>
+            <div class="text-base font-bold leading-tight" style="color:#171A20" id="mbInitial">₩0</div>
+        </div>
+        <button type="button" onclick="toggleSheet()" id="mbBtn" class="view-btn shrink-0" aria-expanded="false" aria-controls="summaryPanel">자세히 ▲</button>
+    </div>
+
+<script>
+    // Constants & State
+    const CONTRACT_FEE = 5000000;
+    
+    const TRIMS = [
+        { name: "Premium RWD", tesla: 1700000, code: "$MTY56", intB: "$IPB15", intW: "$IPW15", wheels: [{ code: "$WY19P", name: "19인치 크로스플로 휠", price: 0 }], seats: "5인승", price: 49990000, subsidy: 2210000, gov: 1700000, city: 510000 },   // 서울 2026: 국비 170 + 시비 51 (ev.or.kr)
+        { name: "Premium Long Range AWD", tesla: 2100000, code: "$MTY89", intB: "$IPB16", intW: "$IPW16", wheels: [{ code: "$WY19P", name: "19인치 크로스플로 휠", price: 0 }, { code: "$WY20B", name: "20인치 헬릭스 2.0 휠", price: 2571000 }], seats: "5인승", price: 66990000, subsidy: 2730000, gov: 2100000, city: 630000 },   // 국비 210 + 시비 63
+        { name: "L AWD", tesla: 2150000, code: "$MTY91", intB: "$IPB9", intW: "$IPW9", wheels: [{ code: "$WY19L", name: "19인치 마키나 2.0 휠", price: 0 }], seats: "6인승", price: 72990000, subsidy: 2790000, gov: 2150000, city: 640000 }   // 국비 215 + 시비 64
+    ];
+
+    // 선택 옵션 합계 (트림+색상+인테리어+휠+오토파일럿) — 계산하는 세 곳이 같은 값을 쓰도록 하나로
+    function basePrice() {
+        const w = TRIMS[state.trimIdx].wheels[state.wheelIdx] || TRIMS[state.trimIdx].wheels[0];
+        return TRIMS[state.trimIdx].price + COLORS[state.colorIdx].price + (state.hasInterior ? 1929000 : 0) + w.price + apPrice();
+    }
+    function vehiclePrice() {          // 2027년 등록을 고르면 개소세 감면 축소분(추정)을 더함
+        const b = basePrice();
+        return state.regIdx === 1 ? b + exciseOf(b).inc27 : b;
+    }
+
+    // 테슬라 구성 화면과 같은 이미지 (테슬라 서버에서 바로 불러옴, 파일로 저장하지 않음)
+    const COMPOSITOR = 'https://static-assets.tesla.com/configurator/compositor?context=design_studio_2&model=my&bkba_opt=1&crop=0,0,0,0&overlay=0';
+    function carImageUrl(view, size, trimIdx) {
+        const thumb = trimIdx !== undefined;
+        const t = TRIMS[thumb ? trimIdx : state.trimIdx];
+        const c = COLORS[thumb ? 0 : state.colorIdx];
+        const paint = (t.code === '$MTY91' && c.codeL) ? c.codeL : c.code;
+        const w = thumb ? t.wheels[0] : (t.wheels[state.wheelIdx] || t.wheels[0]);
+        const inter = (!thumb && state.hasInterior) ? t.intW : t.intB;
+        return `${COMPOSITOR}&size=${size}&view=${view}&options=${encodeURIComponent([t.code, paint, w.code, inter].join(','))}`;
+    }
+    function updateCarImage() {
+        const img = document.getElementById('carImage');
+        if (!img) return;
+        const url = carImageUrl(state.view, 1400);
+        if (img.dataset.src !== url) {
+            img.style.opacity = '0.35';
+            img.dataset.src = url;
+            img.onload = () => { img.style.opacity = '1'; };
+            img.onerror = () => { img.style.opacity = '1'; document.getElementById('carImageNote').innerText = '사진을 불러오지 못했습니다 (인터넷 연결 확인)'; };
+            img.src = url;
+        }
+        const t = TRIMS[state.trimIdx], c = COLORS[state.colorIdx];
+        const cname = (c.id === 'silver' && state.trimIdx === 2) ? 'Cosmic Silver' : c.name;
+        const w = t.wheels[state.wheelIdx] || t.wheels[0];
+        document.getElementById('carImageNote').innerText = `Model Y ${t.name} · ${cname} · ${w.name} · ${state.hasInterior ? '젠 그레이' : 'All Black'} 인테리어 · ${t.seats}`;
+        document.querySelectorAll('#viewContainer button').forEach(b => b.classList.toggle('active', b.dataset.view === state.view));
+    }
+    function toggleDetail(force) {
+        state.detailOpen = typeof force === 'boolean' ? force : !(state.detailOpen !== false);
+        const open = state.detailOpen !== false;
+        document.getElementById('detailBody').style.display = open ? '' : 'none';
+        document.getElementById('detailToggleIcon').innerText = open ? '접기 ▲' : '펼치기 ▼';
+        document.getElementById('detailToggle').setAttribute('aria-expanded', open);
+        if (typeof force !== 'boolean') saveSettings();
+    }
+    function toggleSheet(force) {
+        const open = typeof force === 'boolean' ? force : !document.body.classList.contains('sheet-open');
+        document.body.classList.toggle('sheet-open', open);
+        const b = document.getElementById('mbBtn');
+        if (b) { b.innerText = open ? '닫기 ▼' : '자세히 ▲'; b.setAttribute('aria-expanded', open); }
+    }
+    function setView(v) { state.view = v; updateCarImage(); saveSettings(); }
+    function updateWheel(idx) { state.wheelIdx = idx; renderWheels(); calculate(); }
+    function renderWheels() {
+        const box = document.getElementById('wheelContainer');
+        if (!box) return;
+        const ws = TRIMS[state.trimIdx].wheels;
+        if (state.wheelIdx >= ws.length) state.wheelIdx = 0;
+        box.innerHTML = ws.map((w, i) => `
+            <label class="select-card ${i === state.wheelIdx ? 'active' : ''} rounded-xl p-4 flex items-center justify-between" onclick="updateWheel(${i})">
+                <div class="text-white font-medium">${w.name}</div>
+                <div class="text-sm font-medium ${w.price ? 'text-blue-400' : 'text-gray-400'}">${w.price ? '+ ' + formatWon(w.price) : '포함'}</div>
+            </label>`).join('') + (ws.length === 1 ? `<p class="text-[11px] text-gray-500 md:col-span-2">이 트림은 휠 선택이 없습니다 · 좌석 ${TRIMS[state.trimIdx].seats} 고정</p>` : '');
+    }
+    function renderTrimThumbs() {
+        document.querySelectorAll('.trim-thumb').forEach(im => { im.src = carImageUrl('FRONT34', 600, +im.dataset.trim); });
+    }
+
+    const COLORS = [
+        { id: 'stealthGrey', code: '$PN01', name: "Stealth Grey", hex: "#3b3c40", price: 0 },
+        { id: 'pearlWhite', code: '$PPSW', name: "Pearl White", hex: "#e8e8e8", price: 1286000 },
+        { id: 'diamondBlack', code: '$PX02', name: "Diamond Black", hex: "#0a0a0a", price: 1929000 },
+        { id: 'glacierBlue', code: '$PB01', name: "Glacier Blue", hex: "#2b4c6b", price: 1929000 },
+        { id: 'ultraRed', code: '$PR01', name: "Ultra Red", hex: "#8c1515", price: 2759000 },
+        { id: 'silver', code: '$PN00', codeL: '$PN03', name: "Quicksilver", hex: "#9a9a9a", price: 2759000 } // Name changes based on trim
+    ];
+
+    const AUTOPILOT = [
+        { name: "기본 오토파일럿", price: 0 },
+        { name: "향상된 오토파일럿 (EAP)", price: 4522000 },
+        { name: "FSD(감독형) 월 구독", price: 0, monthly: 150000, lump: 9043000 }   // 2026.11 테슬라 코리아: 일시불 판매 없음, 월 구독만
+    ];
+
+    const TERMS = [
+        // 삼성카드 카드할부 이벤트 금리 (2026.11 기준, ~2026.11.15) · 정상 금리 연 9.0%
+        { months: 60, rate: 0.048 },
+        { months: 48, rate: 0.047 },
+        { months: 36, rate: 0.047 },
+        { months: 24, rate: 0.046 },
+        { months: 12, rate: 0.045 },
+        { months: 6, rate: 0.045 },
+        { months: 3, rate: 0.045 }
+    ];
+
+    let state = {
+        trimIdx: 0,
+        colorIdx: 0,
+        hasInterior: false,
+        wheelIdx: 0,
+        customRate: 0,
+        prepayMode: 0,
+        prepays: [{ m: 12, a: 5000000 }],
+        fsdLump: false,
+        view: 'FRONT34',
+        autopilotIdx: 0,
+        termIdx: 0,
+        cashbackIdx: 0,
+        regIdx: 0,
+        subsidyMode: 0,
+        downPayment: 25000000,
+        insurance: 1300000,
+        subsidy: 2210000,
+        tinting: 1000000,   // 내 예산: 틴팅 100만
+        ppf: 3000000,       // 내 예산: PPF 300만
+        glassCoating: 0,
+        soundproofing: 0,
+        leatherCoating: 0,
+        registrationFee: 100000,   // 등록 부대비용 10만 고정
+        others: 0
+    };
+
+    // Initialize formatting utility
+    const formatWon = (num) => "₩" + Math.round(num).toLocaleString();
+
+    // UI Updaters
+    function updateTrim(idx) {
+        state.trimIdx = idx;
+        document.querySelectorAll('#trimContainer label').forEach((el, i) => {
+            el.classList.toggle('active', i === idx);
+        });
+
+        // 트림 변경 시 해당 트림의 서울시 예상 보조금으로 자동 업데이트
+        setSubsidy(subsidyBase());
+
+        renderColors(); // Re-render colors because silver name changes
+        renderWheels();
+        calculate();
+    }
+
+    function renderColors() {
+        const container = document.getElementById('colorContainer');
+        if(!container) return;
+        container.innerHTML = '';
+        
+        COLORS.forEach((color, idx) => {
+            let displayName = color.name;
+            // Handle specific Silver name for L AWD
+            if(color.id === 'silver' && state.trimIdx === 2) {
+                displayName = "Cosmic Silver";
+            }
+            
+            const isFree = color.price === 0;
+            const priceStr = isFree ? '기본' : `+${formatWon(color.price).replace('₩', '')}`;
+            
+            const html = `
+                <label class="select-card color-card rounded-xl p-3 text-center flex flex-col items-center justify-between ${state.colorIdx === idx ? 'active' : ''} transition-all" onclick="updateColor(${idx})">
+                    <div class="color-swatch" style="background-color: ${color.hex};"></div>
+                    <div class="text-[10px] text-gray-300 font-medium mb-1 leading-tight h-8 flex items-center justify-center">${displayName}</div>
+                    <div class="text-[10px] ${isFree ? 'text-gray-500' : 'text-blue-400'} font-medium">${priceStr}</div>
+                </label>
+            `;
+            container.innerHTML += html;
+        });
+    }
+
+    function updateColor(idx) {
+        state.colorIdx = idx;
+        document.querySelectorAll('.color-card').forEach((el, i) => {
+            el.classList.toggle('active', i === idx);
+        });
+        calculate();
+    }
+
+    function toggleInterior() {
+        state.hasInterior = !state.hasInterior;
+        const card = document.getElementById('interiorCard');
+        const checkbox = document.getElementById('interiorCheckbox');
+        
+        if(state.hasInterior) {
+            card.classList.add('active');
+            checkbox.classList.replace('bg-gray-800', 'bg-blue-500');
+            checkbox.classList.replace('border-gray-600', 'border-blue-500');
+            checkbox.innerHTML = '<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        } else {
+            card.classList.remove('active');
+            checkbox.classList.replace('bg-blue-500', 'bg-gray-800');
+            checkbox.classList.replace('border-blue-500', 'border-gray-600');
+            checkbox.innerHTML = '';
+        }
+        calculate();
+    }
+
+    // FSD: 기본은 월 구독(차량가 미포함), '일시불 결제' 체크 시 일시불 금액을 차량가에 넣고 구독은 없앰
+    function apPrice() {
+        const a = AUTOPILOT[state.autopilotIdx];
+        return (a.lump && state.fsdLump) ? a.lump : a.price;
+    }
+    function apMonthly() {
+        const a = AUTOPILOT[state.autopilotIdx];
+        return (a.lump && state.fsdLump) ? 0 : (a.monthly || 0);
+    }
+    function toggleFsdLump(e) {
+        if (e) e.stopPropagation();
+        state.fsdLump = !state.fsdLump;
+        if (state.fsdLump && state.autopilotIdx !== 2) { updateAutopilot(2); }
+        const box = document.getElementById('fsdLumpBox');
+        box.className = 'w-4 h-4 rounded border flex items-center justify-center ' + (state.fsdLump ? 'bg-blue-500 border-blue-500' : 'bg-gray-800 border-gray-600');
+        box.innerHTML = state.fsdLump ? '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>' : '';
+        document.getElementById('fsdLumpPrice').className = state.fsdLump ? 'text-blue-400 font-medium' : 'text-gray-400';
+        calculate();
+    }
+
+    // ---------- 보조금 방식 ----------
+    // 0 보조금: 서울 2026 국비+시비(ev.or.kr) · 1 테조금: 테슬라코리아 자체 지원(Model Y RWD 170 · 롱레인지 210 · L 215만, 2026.11 사용자 확인) · 2 보포자: 보조금 포기
+    // 보조금·테조금은 현금으로 받는 돈이 아니라 차값(잔금)에서 바로 빠짐 → 할부 원금에서 뺌
+    function subsidyBase() {
+        const t = TRIMS[state.trimIdx];
+        return [t.subsidy, t.tesla, 0][state.subsidyMode];
+    }
+    function subsidyNoteText() {
+        const t = TRIMS[state.trimIdx];
+        if (state.subsidyMode === 0) return `국비 ${formatWon(t.gov)} + 서울시 ${formatWon(t.city)} (2026 서울 · 지급신청 기한 2026.12.9 · 2년 의무운행)`;
+        if (state.subsidyMode === 1) return `테슬라 자체 지원 ${formatWon(t.tesla)} (Model Y 트림별 · 차값에서 할인 · 정부 보조금과 중복 불가 · 조건 수시 변경)`;
+        return '보조금을 받지 않음 → 0원 (2년 의무운행·지자체 거주요건 없음, 출고 일정 자유)';
+    }
+    function setSubsidy(v) {
+        state.subsidy = v;
+        const si = document.getElementById('subsidyInput'), ss = document.getElementById('subsidySlider');
+        if (si) si.value = v.toLocaleString();
+        if (ss) ss.value = v;
+        const sn = document.getElementById('subsidyNote');
+        if (sn) sn.innerText = subsidyNoteText();
+        document.getElementById('subsidyModeLabel').innerText = ['(서울 국비+시비)', '(테조금)', '(보포자)'][state.subsidyMode];
+    }
+    function updateSubsidyMode(idx) {
+        state.subsidyMode = idx;
+        document.querySelectorAll('#subsidyModeContainer label').forEach((el, i) => el.classList.toggle('active', i === idx));
+        setSubsidy(subsidyBase());
+        calculate();
+    }
+
+    // ---------- 개별소비세 (차량 가격 안에 들어 있는 세금) ----------
+    // 차량가(부가세 포함) P = (공급가 X + 개소세 T + 교육세 0.3T) × 1.1,  T = max(0, X×5% − 감면한도)
+    // 승용차 개소세 5% (3.5% 인하는 2026.6.30 종료) · 전기차 감면 한도 2026년 300만 → 2027년 200만(정부안, 국회 미확정)
+    // 주의: 수입차 개소세는 실제로는 수입신고가격 기준이라 판매가로 거꾸로 셈한 이 값은 '많아야 이 정도'인 추정치
+    const EXCISE = { rate: 0.05, edu: 0.3, cap2026: 3000000, cap2027: 2000000 };
+    function exciseOf(P) {
+        const net = P / 1.1;
+        let X = net, T = 0;
+        if (net * EXCISE.rate > EXCISE.cap2026) {
+            X = (net + (1 + EXCISE.edu) * EXCISE.cap2026) / (1 + (1 + EXCISE.edu) * EXCISE.rate);
+            T = X * EXCISE.rate - EXCISE.cap2026;
+        }
+        const full = X * EXCISE.rate;                       // 감면 전 개소세
+        const T27 = Math.max(0, full - EXCISE.cap2027);
+        const inc27 = Math.round(((T27 - T) * (1 + EXCISE.edu)) * 1.1);   // 2027 감면 축소로 오를 수 있는 값(교육세·부가세 포함)
+        return { X, full, T26: T, edu26: T * EXCISE.edu, T27, edu27: T27 * EXCISE.edu,
+                 relief26: Math.min(full, EXCISE.cap2026) * (1 + EXCISE.edu) * 1.1,
+                 relief27: Math.min(full, EXCISE.cap2027) * (1 + EXCISE.edu) * 1.1, inc27 };
+    }
+    function acqTax(P, relief) {
+        const raw = Math.floor(P / 1.1 * 0.07 / 10) * 10;
+        return { raw, relief: Math.min(raw, relief), tax: raw - Math.min(raw, relief) };
+    }
+
+    // ---------- 세금·비용 결산 (2026년 등록 vs 2027년 등록) ----------
+    function renderSettlement() {
+        const box = document.getElementById('settleTable');
+        if (!box) return;
+        const b = basePrice();
+        const e = exciseOf(b);
+        const P = [b, b + e.inc27];
+        const ex = [e.T26 + e.edu26, e.T27 + e.edu27];
+        const rl = [e.relief26, e.relief27];
+        const acq = [acqTax(P[0], 1400000), acqTax(P[1], 700000)];
+        const sub = state.subsidy;
+        const tot = [0, 1].map(i => P[i] + acq[i].tax - sub);
+        const W = v => formatWon(v), sel = state.regIdx;
+        const col = (i, v, cls = '') => `<td class="py-2 px-2 text-right ${cls} ${sel === i ? 'bg-blue-950/40 text-white' : 'text-gray-300'}">${v}</td>`;
+        const row = (label, a, c, cls = '', sub = '') => `<tr class="border-t border-gray-800"><td class="py-2 pr-2 text-gray-400 ${cls}">${label}${sub ? `<div class="text-[10px] text-gray-600">${sub}</div>` : ''}</td>${col(0, a, cls)}${col(1, c, cls)}</tr>`;
+        box.innerHTML = `
+            <table class="w-full text-sm">
+                <thead><tr class="text-xs text-gray-500"><th class="text-left font-normal pb-2">항목</th>
+                    <th class="text-right font-normal pb-2 px-2 ${sel === 0 ? 'text-blue-300' : ''}">2026년 등록</th>
+                    <th class="text-right font-normal pb-2 px-2 ${sel === 1 ? 'text-blue-300' : ''}">2027년 등록 <span class="text-yellow-500">(정부안)</span></th></tr></thead>
+                <tbody>
+                ${row('차량 가격 (옵션 포함)', W(P[0]), W(P[1]), 'font-medium', '테슬라 판매가 · 2027년은 개소세 감면 축소분을 더한 추정')}
+                ${row('└ 가격에 든 부가세 10%', W(P[0] / 11), W(P[1] / 11), 'text-xs')}
+                ${row('└ 가격에 든 개소세+교육세', W(ex[0]), W(ex[1]), 'text-xs', '감면 후 · 판매가로 거꾸로 셈한 최대 추정')}
+                ${row('└ 전기차 개소세 감면 효과', '- ' + W(rl[0]), '- ' + W(rl[1]), 'text-xs text-green-400', '한도 300만 → 200만 (교육세·부가세 포함)')}
+                ${row('취득세 (내가 따로 냄)', W(acq[0].tax), W(acq[1].tax), 'font-medium', `차량가÷1.1×7% = ${W(acq[0].raw)} − 감면 ${W(acq[0].relief)} / 2027년 감면 ${W(acq[1].relief)}`)}
+                ${row(['보조금 (서울)', '테조금', '보조금 (포기)'][state.subsidyMode] + ' — 차값에서 빠짐', '- ' + W(sub), '- ' + W(sub), 'text-green-400', '2027년 보조금은 미정 → 같은 값으로 가정')}
+                <tr class="border-t-2 border-gray-600"><td class="py-3 pr-2 text-white font-bold">차량 실부담 합계<div class="text-[10px] text-gray-500 font-normal">차량가 + 취득세 − 보조금 (보험·시공·이자 제외)</div></td>
+                    ${col(0, W(tot[0]), 'font-bold text-lg')}${col(1, W(tot[1]), 'font-bold text-lg')}</tr>
+                </tbody>
+            </table>
+            <div class="mt-3 p-3 rounded-lg bg-yellow-900/20 border border-yellow-900/40 text-sm text-yellow-200">
+                2027년에 등록하면 약 <b>${W(tot[1] - tot[0])}</b> 더 듦 (개소세 감면 축소 ${W(e.inc27)} + 취득세 감면 축소 ${W(acq[1].tax - acq[0].tax)})
+            </div>`;
+    }
+
+    function updateAutopilot(idx) {
+        state.autopilotIdx = idx;
+        document.querySelectorAll('#autopilotContainer label').forEach((el, i) => {
+            el.classList.toggle('active', i === idx);
+        });
+        
+        // 옵션별 설명 토글
+        document.getElementById('descAutopilot0').classList.add('hidden');
+        document.getElementById('descAutopilot1').classList.add('hidden');
+        document.getElementById('descAutopilot2').classList.add('hidden');
+        
+        const activeDesc = document.getElementById('descAutopilot' + idx);
+        if (activeDesc) {
+            activeDesc.classList.remove('hidden');
+        }
+
+        calculate();
+    }
+
+    const CASHBACK = [
+        { name: "카드 계속 사용", rate: 0.012 },
+        { name: "일회성 결제", rate: 0.010 }
+    ];
+
+    const REG = [
+        { name: "2026년 등록", relief: 1400000 },
+        { name: "2027년 이후 등록(정부안)", relief: 700000 }
+    ];
+
+    function updateReg(idx) {
+        state.regIdx = idx;
+        document.querySelectorAll('#regContainer label').forEach((el, i) => {
+            el.classList.toggle('active', i === idx);
+        });
+        calculate();
+    }
+
+    function updateCashback(idx) {
+        state.cashbackIdx = idx;
+        document.querySelectorAll('#cashbackContainer label').forEach((el, i) => {
+            el.classList.toggle('active', i === idx);
+        });
+        const c = CASHBACK[idx];
+        document.getElementById('cashbackRateLabel').innerText = `(${(c.rate * 100).toFixed(1)}% 현금 환급 · ${c.name})`;
+        calculate();
+    }
+
+    // 적용 금리: 직접 입력값이 있으면 그것, 없으면 기간별 이벤트 금리 (삼성카드 카드할부)
+    function rateNow() { return state.customRate > 0 ? state.customRate / 100 : TERMS[state.termIdx].rate; }
+    function setCustomRate(v) {
+        const x = parseFloat(String(v).replace(/[^0-9.]/g, ''));
+        state.customRate = x > 0 && x < 30 ? x : 0;
+        const el = document.getElementById('customRateInput');
+        if (el && document.activeElement !== el) el.value = state.customRate ? state.customRate : '';
+        calculate();
+    }
+
+    function updateTerm(idx) {
+        state.termIdx = idx;
+        document.querySelectorAll('#termContainer label').forEach((el, i) => {
+            el.classList.toggle('active', i === idx);
+        });
+        const t = TERMS[idx];
+        document.getElementById('termRateLabel').innerText = `(${t.months}개월 / ${(rateNow() * 100).toFixed(1)}%)`;
+        calculate();
+    }
+
+    function handleSliderChange(field) {
+        const val = parseFloat(document.getElementById(field + 'Slider').value) || 0;
+        state[field] = val;
+        
+        const inputEl = document.getElementById(field + 'Input');
+        if(inputEl) inputEl.value = val.toLocaleString();
+        
+        calculate();
+    }
+
+    // 카드 할부금액을 직접 넣으면 선수금 = 잔금 − 할부금액
+    function handleLoanInput() {
+        const el = document.getElementById('loanInput');
+        const balance = Math.max(0, vehiclePrice() - CONTRACT_FEE - state.subsidy);
+        let v = parseFloat(el.value.replace(/[^0-9]/g, '')) || 0;
+        if (v > balance) v = balance;
+        state.downPayment = balance - v;
+        document.getElementById('downPaymentSlider').value = state.downPayment;
+        document.getElementById('downPaymentInput').value = state.downPayment.toLocaleString();
+        el.value = v.toLocaleString();
+        calculate();
+    }
+
+    function handleInputChange(field) {
+        let inputEl = document.getElementById(field + 'Input');
+        let rawValue = inputEl.value.replace(/[^0-9]/g, '');
+        let val = parseFloat(rawValue) || 0;
+        const slider = document.getElementById(field + 'Slider');
+        
+        const maxVal = parseFloat(slider.max);
+        if (val > maxVal) {
+            val = maxVal;
+        }
+        
+        state[field] = val;
+        slider.value = val;
+        
+        if (field === 'downPayment') {
+            const totalPrice = vehiclePrice();
+            const maxDown = totalPrice - CONTRACT_FEE;
+            if(val > maxDown) {
+                val = maxDown;
+                slider.value = val;
+                state.downPayment = val;
+            }
+        }
+        
+        inputEl.value = val.toLocaleString();
+        
+        calculate();
+    }
+
+    function targetMonthly500k() {
+        // We want PMT(P, r, n) to be approx 500,000
+        // P = 500000 * ((1+r)^n - 1) / (r(1+r)^n)
+        const t = TERMS[state.termIdx];
+        const r = rateNow() / 12;
+        const n = t.months;
+        
+        let targetPrincipal = 0;
+        if(r > 0) {
+            const factor = Math.pow(1 + r, n);
+            targetPrincipal = 500000 * (factor - 1) / (r * factor);
+        } else {
+            targetPrincipal = 500000 * n;
+        }
+
+        const totalPrice = vehiclePrice();
+        
+        // Required down payment to hit target principal
+        let requiredDown = totalPrice - CONTRACT_FEE - state.subsidy - targetPrincipal;
+        
+        // Clamp bounds
+        if(requiredDown < 0) requiredDown = 0;
+        if(requiredDown > totalPrice - CONTRACT_FEE - state.subsidy) requiredDown = Math.max(0, totalPrice - CONTRACT_FEE - state.subsidy);
+        
+        // Snap to nearest 100,000 for clean numbers
+        requiredDown = Math.round(requiredDown / 100000) * 100000;
+
+        // Update state and UI
+        state.downPayment = requiredDown;
+        document.getElementById('downPaymentSlider').value = requiredDown;
+        document.getElementById('downPaymentInput').value = requiredDown.toLocaleString();
+        
+        calculate();
+    }
+
+    let calculatedData = {};
+
+    function calculate() {
+        // 1. Total Price
+        const trimPrice = TRIMS[state.trimIdx].price;
+        const colorPrice = COLORS[state.colorIdx].price;
+        const interiorPrice = state.hasInterior ? 1929000 : 0;
+        const autopilotPrice = apPrice();
+        const totalPrice = vehiclePrice();
+        updateCarImage();
+        
+        // Adjust slider max based on total price
+        const maxDown = Math.max(0, totalPrice - CONTRACT_FEE - state.subsidy);   // 잔금 = 차량가 − 계약금 − 보조금
+        const slider = document.getElementById('downPaymentSlider');
+        slider.max = maxDown;
+        if(state.downPayment > maxDown) {
+            state.downPayment = maxDown;
+            slider.value = maxDown;
+            document.getElementById('downPaymentInput').value = maxDown.toLocaleString();
+        }
+
+        // 2. Principal
+        let principal = totalPrice - CONTRACT_FEE - state.subsidy - state.downPayment;   // 할부 원금 = 잔금 − 선수금
+        if (principal < 0) principal = 0;
+
+        // 3. Monthly Payment (PMT)
+        const t = TERMS[state.termIdx];
+        const r = rateNow() / 12;
+        const n = t.months;
+        let monthlyPayment = 0;
+        if (principal > 0) {
+            monthlyPayment = Math.floor(principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
+        }
+        document.getElementById('limitWarn').classList.toggle('hidden', principal <= 70000000);
+        // 잔금 나눔 표시: 선수금 ↔ 카드 할부금액
+        const balance = Math.max(0, totalPrice - CONTRACT_FEE - state.subsidy);
+        const dpPct = balance ? Math.round(state.downPayment / balance * 100) : 0;
+        document.getElementById('balanceOutput').innerText = formatWon(balance);
+        document.getElementById('splitDown').style.width = dpPct + '%';
+        document.getElementById('splitLoan').style.width = (100 - dpPct) + '%';
+        document.getElementById('splitDownPct').innerText = `${dpPct}% · ${formatWon(state.downPayment)}`;
+        document.getElementById('splitLoanPct').innerText = `${100 - dpPct}% · ${formatWon(principal)}`;
+        const loanEl = document.getElementById('loanInput');
+        if (document.activeElement !== loanEl) loanEl.value = principal.toLocaleString();
+        const lp = Math.round(principal / 70000000 * 100);
+        const ln = document.getElementById('loanLimitNote');
+        ln.innerText = `카드할부 한도 7,000만원 중 ${lp}%` + (principal > 70000000 ? ' — 한도 초과, 선수금을 늘려 주세요' : '');
+        ln.style.color = principal > 70000000 ? '#C0262D' : '';
+
+        // 4. 취득세: 차량가(부가세 제외) × 7% − 전기차 감면(2026년 140만 / 2027년~ 정부안 70만), 10원 미만 버림
+        const at = acqTax(totalPrice, REG[state.regIdx].relief);
+        const taxRaw = at.raw, relief = at.relief;
+        let tax = at.tax;
+        document.getElementById('taxDetail').innerText = `(${formatWon(taxRaw)} − 전기차 감면 ${formatWon(relief)} · ${REG[state.regIdx].name})`;
+
+        // 5. Cashback (선수금 × 1.2% 카드 계속 사용 / 1.0% 일회성 결제)
+        const cashback = Math.floor(state.downPayment * CASHBACK[state.cashbackIdx].rate);
+
+        // 6. 시점별 돈: ① 인도 전(등록 전) ② 인도 후 ③ 나중에 돌려받음
+        const afterCosts = state.tinting + state.ppf + state.glassCoating + state.soundproofing + state.leatherCoating + state.others;
+        const initialCash = CONTRACT_FEE + state.downPayment + tax + state.registrationFee + state.insurance;   // ① 계약금+선수금+취득세+등록비+보험료
+        const sched = simulateLoan(principal, rateNow(), n, [], 0);   // 실제 상환 일정(마지막 회차 끝수 정리 포함)
+        const totalInterest = sched.interest;
+        const totalCost = initialCash + sched.paid + afterCosts - cashback;   // 총 실부담(이자 포함)
+
+        // Output formatting
+        document.getElementById('totalPriceOutput').innerText = formatWon(totalPrice);
+        document.getElementById('downPaymentOutput').innerText = formatWon(state.downPayment);
+        document.getElementById('principalOutput').innerText = formatWon(principal);
+        document.getElementById('taxOutput').innerText = formatWon(tax);
+        document.getElementById('cashbackOutput').innerText = "- " + formatWon(cashback);
+        document.getElementById('monthlyPaymentOutput').innerText = formatWon(monthlyPayment);
+        const fsdMonthly = apMonthly();
+        const fsdEl = document.getElementById('fsdMonthlyOutput');
+        fsdEl.classList.toggle('hidden', !fsdMonthly);
+        if (fsdMonthly) fsdEl.innerText = `+ FSD 구독 ${formatWon(fsdMonthly)}/월 → 매달 합계 ${formatWon(monthlyPayment + fsdMonthly)}`;
+        document.getElementById('initialCashOutput').innerText = formatWon(initialCash);
+        document.getElementById('afterCostOutput').innerText = formatWon(afterCosts);
+        document.getElementById('cashbackLaterOutput').innerText = '+ ' + formatWon(cashback);
+        document.getElementById('finalInitialOutput').innerText = formatWon(initialCash + afterCosts - cashback);   // ④ = ① + ② − ③
+        const mbM = document.getElementById('mbMonthly'), mbI = document.getElementById('mbInitial');
+        if (mbM) mbM.innerText = formatWon(monthlyPayment);
+        if (mbI) mbI.innerText = formatWon(initialCash + afterCosts - cashback);
+        document.getElementById('subsidyOutput').innerText = '- ' + formatWon(state.subsidy);
+        document.getElementById('subsidyRowLabel').innerText = ['보조금 (서울)', '테조금', '보조금 (포기)'][state.subsidyMode];
+        document.getElementById('regFeeOutput').innerText = formatWon(state.registrationFee);
+        document.getElementById('insuranceOutput').innerText = formatWon(state.insurance);
+        document.getElementById('interestOutput').innerText = formatWon(totalInterest);
+        document.getElementById('totalCostOutput').innerText = formatWon(totalCost);
+        const w = TRIMS[state.trimIdx].wheels[state.wheelIdx] || TRIMS[state.trimIdx].wheels[0];
+        const parts = [`트림 ${formatWon(trimPrice)}`];
+        if (colorPrice) parts.push(`색상 +${formatWon(colorPrice)}`);
+        if (w.price) parts.push(`휠 +${formatWon(w.price)}`);
+        if (interiorPrice) parts.push(`인테리어 +${formatWon(interiorPrice)}`);
+        if (autopilotPrice) parts.push(`${state.autopilotIdx === 2 ? 'FSD 일시불' : '향상된 오토파일럿'} +${formatWon(autopilotPrice)}`);
+        if (state.regIdx === 1) parts.push(`2027 개소세 인상 추정 +${formatWon(totalPrice - basePrice())}`);
+        document.getElementById('priceBreakdown').innerText = parts.join(' · ');
+
+        renderSettlement();
+        window.__loan = { principal, rate: rateNow(), n, base: initialCash + afterCosts - cashback };
+        document.getElementById('termRateLabel').innerText = `(${n}개월 / ${(rateNow() * 100).toFixed(1)}%${state.customRate > 0 ? ' 직접 입력' : ''})`;
+        document.getElementById('rateNowNote').innerText = state.customRate > 0 ? `직접 입력한 연 ${state.customRate}% 적용 중` : `표의 이벤트 금리 연 ${(TERMS[state.termIdx].rate * 100).toFixed(1)}% 적용 중`;
+        renderPrepay();
+        saveSettings();
+
+        // Store data for AI
+        calculatedData = {
+            tax,
+            totalPrice,
+            monthlyPayment,
+            initialCash
+        };
+    }
+
+    // ---------- 중도상환 계산기 ----------
+    // 원리금균등: 매달 이자 = floor(잔액 × 월이율), 원금 = 납입 − 이자. 중도상환은 그 달 납입 뒤 원금에서 바로 뺌.
+    // mode 0: 남은 기간 유지 → 월 납입 다시 계산 / mode 1: 월 납입 유지 → 기간 단축
+    function pmtOf(P, r, n) { if (P <= 0 || n <= 0) return 0; return r > 0 ? Math.floor(P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1)) : Math.ceil(P / n); }
+    function simulateLoan(P, annual, n, prepays, mode) {
+        const r = annual / 12;
+        let bal = P, pay = pmtOf(P, r, n), paid = 0, interest = 0, month = 0, firstPayAfter = null;
+        const byMonth = {}; (prepays || []).forEach(x => { const m = Math.round(x.m), a = Math.max(0, x.a || 0); if (m >= 1 && m < n && a > 0) byMonth[m] = (byMonth[m] || 0) + a; });
+        const years = [], monthly = [];
+        let yInt = 0;
+        while (bal > 0 && month < n) {
+            month++;
+            const it = Math.floor(bal * r);
+            let pr = pay - it;
+            if (month === n || pr >= bal) pr = bal;       // 마지막 회차: 남은 원금 모두
+            const thisPay = pr + it;
+            bal -= pr; paid += thisPay; interest += it; yInt += it;
+            if (byMonth[month] && bal > 0) {
+                const a = Math.min(byMonth[month], bal);
+                bal -= a; paid += a;
+                if (mode === 0 && bal > 0) pay = pmtOf(bal, r, n - month);
+                if (firstPayAfter === null) firstPayAfter = bal > 0 ? pay : 0;
+            }
+            monthly.push({ month, bal: Math.max(0, bal), paid, interest, pay: thisPay });
+            if (month % 12 === 0 || bal <= 0) { years.push({ year: Math.ceil(month / 12), month, bal: Math.max(0, bal), yInt }); yInt = 0; }
+        }
+        return { paid, interest, months: month, firstPay: pmtOf(P, r, n), firstPayAfter, years, monthly };
+    }
+    function readPrepays() { return (state.prepays || []).map(x => ({ m: +x.m || 0, a: +x.a || 0 })); }
+    function setPrepayMode(i) {
+        state.prepayMode = i;
+        document.querySelectorAll('#ppModeContainer label').forEach((el, k) => el.classList.toggle('active', k === i));
+        renderPrepay(); saveSettings();
+    }
+    function addPrepay() { (state.prepays = state.prepays || []).push({ m: 24, a: 5000000 }); renderPrepayRows(); renderPrepay(); saveSettings(); }
+    function removePrepay(i) { state.prepays.splice(i, 1); renderPrepayRows(); renderPrepay(); saveSettings(); }
+    function editPrepay(i, key, el) {
+        const v = parseFloat(String(el.value).replace(/[^0-9]/g, '')) || 0;
+        state.prepays[i][key] = v;
+        if (key === 'a') el.value = v.toLocaleString();
+        renderPrepay(); saveSettings();
+    }
+    function renderPrepayRows() {
+        const box = document.getElementById('ppRows');
+        if (!box) return;
+        const rows = state.prepays || [];
+        box.innerHTML = rows.length ? rows.map((x, i) => `
+            <div class="flex flex-wrap items-center gap-2 text-sm">
+                <span class="text-gray-400 w-6">${i + 1}.</span>
+                <input type="text" inputmode="numeric" value="${x.m}" oninput="editPrepay(${i},'m',this)" class="bg-gray-800 border border-gray-700 text-white text-right w-16 rounded px-2 py-1" aria-label="${i + 1}번 중도상환 시점(개월)"><span class="text-gray-400">개월 뒤</span>
+                <input type="text" inputmode="numeric" value="${Number(x.a).toLocaleString()}" oninput="editPrepay(${i},'a',this)" class="bg-gray-800 border border-gray-700 text-white text-right w-36 rounded px-2 py-1" aria-label="${i + 1}번 중도상환 금액"><span class="text-gray-400">원 갚기</span>
+                <button type="button" class="view-btn" onclick="removePrepay(${i})" aria-label="${i + 1}번 중도상환 삭제">삭제</button>
+            </div>`).join('') : '<p class="text-xs text-gray-500">중도상환 계획이 없습니다. [+ 중도상환 추가]를 눌러 보세요.</p>';
+    }
+    function togglePpSummary(force) {
+        state.ppSumOpen = typeof force === 'boolean' ? force : !(state.ppSumOpen !== false);
+        const open = state.ppSumOpen !== false;
+        document.getElementById('ppSumBody').style.display = open ? '' : 'none';
+        document.getElementById('ppSumIcon').innerText = open ? '접기 ▲' : '펼치기 ▼';
+        document.getElementById('ppSumToggle').setAttribute('aria-expanded', open);
+        if (typeof force !== 'boolean') saveSettings();
+    }
+    // 월 납입이 같은 달끼리 묶기 (마지막 회차 끝수 차이 100원 이내는 같은 구간으로)
+    function payRanges(R) {
+        const out = [];
+        R.monthly.forEach(x => {
+            const last = out[out.length - 1];
+            if (last && Math.abs(last.pay - x.pay) <= 100) last.to = x.month;
+            else out.push({ from: x.month, to: x.month, pay: x.pay });
+        });
+        return out;
+    }
+    function rangesHtml(R, cls) {
+        return payRanges(R).map(g => `<div class="flex justify-between text-sm"><span class="text-gray-400">${g.from === g.to ? g.from + '개월째' : g.from + '~' + g.to + '개월'}</span><span class="${cls || 'text-white font-medium'}">${formatWon(g.pay)}</span></div>`).join('');
+    }
+    function renderPpSummary(A, B, base, n) {
+        const body = document.getElementById('ppSumBody'); if (!body) return;
+        const W = formatWon, plan = readPrepays().filter(x => x.m >= 1 && x.m < n && x.a > 0).sort((a, b) => a.m - b.m);
+        const sum = plan.reduce((t, x) => t + x.a, 0);
+        document.getElementById('ppSumHead').innerText = plan.length ? `(${plan.map(x => x.m + '개월 뒤 ' + (x.a / 10000).toLocaleString() + '만').join(', ')})` : '(계획 없음)';
+        if (!plan.length) { body.innerHTML = '<div class="text-xs text-gray-500">맨 아래 중도상환 계산기에서 계획을 넣으면 여기에 보입니다.</div>'; return; }
+        const mode = state.prepayMode || 0;
+        body.innerHTML =
+            '<div class="text-xs text-gray-500">개월별 월 납입</div>' + rangesHtml(B) +
+            `<div class="flex justify-between text-sm pt-1"><span class="text-gray-400">완납</span><span class="text-white font-medium">${B.months}개월${mode === 1 && B.months < A.months ? ` (원래 ${A.months}개월)` : ''}</span></div>` +
+            `<div class="flex justify-between text-sm"><span class="text-gray-400">총 실부담 (계획 반영)</span><span class="text-white font-bold">${W(base + B.paid)}</span></div>` +
+            `<div class="text-[11px] text-gray-500">처리 방식: ${mode === 0 ? '기간 유지 · 월 납입 줄이기' : '월 납입 유지 · 기간 줄이기'} (계산기에서 변경)</div>`;
+    }
+
+    function renderPrepay() {
+        const c = window.__loan; if (!c || !document.getElementById('ppCompare')) return;
+        const { principal, rate, n, base } = c;
+        document.getElementById('ppPrincipal').innerText = formatWon(principal);
+        document.getElementById('ppTerm').innerText = `${n}개월 / ${(rate * 100).toFixed(1)}%`;
+        const mode = state.prepayMode || 0;
+        const A = simulateLoan(principal, rate, n, [], mode);
+        const B = simulateLoan(principal, rate, n, readPrepays(), mode);
+        const W = formatWon, prepaySum = readPrepays().reduce((t, x) => t + (x.m >= 1 && x.m < n ? x.a : 0), 0);
+        const card = (title, R, hi) => `
+            <div class="rounded-xl border ${hi ? 'border-blue-500' : 'border-gray-800'} p-4">
+                <div class="text-xs text-gray-400 mb-1">${title}</div>
+                <div class="text-lg font-bold text-white">${W(base + R.paid)}</div>
+                <div class="text-[11px] text-gray-500 mb-2">총 실부담</div>
+                <div class="text-xs text-gray-400 space-y-0.5">
+                    <div class="flex justify-between"><span>할부 이자 합계</span><span class="text-white">${W(R.interest)}</span></div>
+                    <div class="flex justify-between"><span>완납</span><span class="text-white">${R.months}개월 (${(R.months / 12).toFixed(1)}년)</span></div>
+                    <div class="flex justify-between"><span>월 납입</span><span class="text-white">${W(R.firstPay)}${R.firstPayAfter !== null ? ' → ' + W(R.firstPayAfter) : ''}</span></div>
+                </div>
+            </div>`;
+        renderPpSummary(A, B, c.base, n);
+        const save = A.interest - B.interest;
+        document.getElementById('ppCompare').innerHTML = card('중도상환 없음', A, false) + card(`내 계획 (중도상환 ${W(prepaySum)})`, B, true) +
+            `<div class="col-span-2 rounded-lg p-3 border border-gray-800"><div class="text-xs text-gray-500 mb-1">내 계획 — 개월별 월 납입${A.months - B.months > 0 ? ` · ${B.months}개월에 완납 (원래 ${A.months}개월)` : ''}</div>${rangesHtml(B)}</div>`;
+        // 시점 조회: k개월 납부 후
+        const k = Math.max(0, Math.min(n, parseInt(document.getElementById('ppAtMonth').value.replace(/[^0-9]/g, '')) || 0));
+        state.ppAtMonth = k;
+        const at = R => { const x = k === 0 ? { bal: principal, paid: 0, interest: 0 } : (R.monthly[k - 1] || { bal: 0, paid: R.paid, interest: R.interest }); return { bal: x.bal, paid: x.paid, intPaid: x.interest, restPay: R.paid - x.paid, restInt: R.interest - x.interest }; };
+        const a0 = at(A), b0 = at(B);
+        const row = (label, sub, x, y, strong) => `<tr class="border-t border-gray-800"><td class="py-1.5 ${strong ? 'text-white font-medium' : 'text-gray-400'}">${label}${sub ? `<div class="text-[11px] text-gray-500">${sub}</div>` : ''}</td><td class="text-right text-gray-300">${W(x)}</td><td class="text-right ${strong ? 'text-white font-bold' : 'text-white'}">${W(y)}</td></tr>`;
+        document.getElementById('ppAtTable').innerHTML = `<thead><tr class="text-xs text-gray-500"><th class="text-left font-normal pb-1">${k}개월 납부 시점</th><th class="text-right font-normal pb-1">중도상환 없음</th><th class="text-right font-normal pb-1">내 계획</th></tr></thead><tbody>` +
+            row('남은 원금', '지금 한 번에 다 갚으면 필요한 돈 (수수료 0원)', a0.bal, b0.bal, true) +
+            row('앞으로 낼 할부 총액', '계획대로 계속 낼 때 (남은 이자 포함)', a0.restPay, b0.restPay) +
+            row('└ 그중 남은 이자', '', a0.restInt, b0.restInt) +
+            row('지금까지 낸 돈', '월 납입 + 중도상환 합계', a0.paid, b0.paid) +
+            row('└ 그중 낸 이자', '', a0.intPaid, b0.intPaid) + '</tbody>';
+        // 연도별
+        const yrs = Math.max(A.years.length, B.years.length);
+        let t = '<thead><tr class="text-xs text-gray-500"><th class="text-left font-normal pb-1">연차</th><th class="text-right font-normal pb-1">남은 원금 (없음)</th><th class="text-right font-normal pb-1">남은 원금 (내 계획)</th><th class="text-right font-normal pb-1">그 해 이자 (없음)</th><th class="text-right font-normal pb-1">그 해 이자 (내 계획)</th></tr></thead><tbody>';
+        for (let i = 0; i < yrs; i++) {
+            const a = A.years[i], b = B.years[i];
+            t += `<tr class="border-t border-gray-800"><td class="py-1.5 text-gray-400">${i + 1}년차</td><td class="text-right text-gray-300">${a ? W(a.bal) : '-'}</td><td class="text-right text-white">${b ? W(b.bal) : '완납'}</td><td class="text-right text-gray-300">${a ? W(a.yInt) : '-'}</td><td class="text-right text-white">${b ? W(b.yInt) : '-'}</td></tr>`;
+        }
+        document.getElementById('ppYearTable').innerHTML = t + '</tbody>';
+        // 금액 × 시기 표
+        const N = v => Math.round(v).toLocaleString();          // 칸이 좁아 ₩·/월 없이 숫자만
+        const plan = readPrepays().filter(x => x.a > 0 && x.m >= 1 && x.m < n).sort((a, b) => a.m - b.m);
+        const tbl = document.getElementById('ppMatrix');
+        tbl.classList.toggle('pp-empty', !plan.length);
+        if (!plan.length) {
+            tbl.innerHTML = '<tbody><tr><td class="text-xs text-gray-500 py-2">위 \'내 중도상환 계획\'에 [+ 중도상환 추가]로 시점과 금액을 넣으면, 갚을 때마다 월 납입이 어떻게 바뀌는지 순서대로 나옵니다.</td></tr></tbody>';
+        } else {
+            const r = rate / 12;
+            let t = `<thead><tr class="text-xs text-gray-500"><th class="text-left font-normal pb-1">단계</th><th class="text-right font-normal pb-1">갚는 돈</th><th class="text-right font-normal pb-1">갚은 뒤 남은 원금</th><th class="text-right font-normal pb-1">${mode === 0 ? '이후 월 납입' : '완납'}</th><th class="text-right font-normal pb-1">총 실부담</th></tr></thead><tbody>`;
+            t += `<tr class="border-t border-gray-800"><td class="py-1.5 text-gray-400">처음 (중도상환 없음)</td><td class="text-right text-gray-500">-</td><td class="text-right text-gray-300">${N(principal)}</td><td class="text-right text-white font-medium">${mode === 0 ? N(A.firstPay) : A.months + '개월'}</td><td class="text-right text-gray-300">${N(base + A.paid)}</td></tr>`;
+            let prevPay = A.firstPay, prevMonths = A.months;
+            plan.forEach((x, k) => {
+                const R = simulateLoan(principal, rate, n, plan.slice(0, k + 1), mode);
+                const after = R.monthly[x.m - 1] ? R.monthly[x.m - 1].bal : 0;
+                const pay = after > 0 ? pmtOf(after, r, n - x.m) : 0;
+                const diff = mode === 0 ? (pay ? `<div class="text-[11px] text-green-400">${N(pay - prevPay)}</div>` : '') : `<div class="text-[11px] text-green-400">${R.months - prevMonths}개월</div>`;
+                const main = mode === 0 ? (pay ? N(pay) : '완납') : R.months + '개월';
+                t += `<tr class="border-t border-gray-800 bg-blue-950/40"><td class="py-1.5 text-white font-medium">${k + 1}. ${x.m}개월 뒤<div class="text-[11px] text-gray-500 font-normal">${mode === 0 ? (x.m + 1) + '개월째부터 적용' : '월 납입은 그대로'}</div></td><td class="text-right text-white">${N(x.a)}</td><td class="text-right text-gray-300">${N(after)}</td><td class="text-right text-white font-bold">${main}${diff}</td><td class="text-right text-white">${N(base + R.paid)}</td></tr>`;
+                if (mode === 0 && pay) prevPay = pay;
+                prevMonths = R.months;
+            });
+            tbl.innerHTML = t + '</tbody>';
+        }
+        document.getElementById('ppMatrixTitle').innerHTML = `내 계획대로 갚을 때마다 — <b class="text-white">${mode === 0 ? '월 납입이 어떻게 바뀌나' : '완납이 얼마나 당겨지나'}</b> <span class="text-xs">(단위 원 · 위 계획을 시점 순서대로 차례로 반영 · 초록 = 바로 앞 단계와 차이)</span>`;
+    }
+
+    // 키보드 조작: 고르는 카드에 Tab 이동 + Enter/Space 선택
+    function makeKeyboardCards() {
+        document.querySelectorAll('.select-card').forEach(el => {
+            if (!el.hasAttribute('tabindex')) { el.setAttribute('tabindex', '0'); el.setAttribute('role', 'button'); }
+        });
+    }
+    document.addEventListener('keydown', e => {
+        const el = e.target;
+        if (el && el.classList && el.classList.contains('select-card') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); el.click(); }
+    });
+    new MutationObserver(makeKeyboardCards).observe(document.body, { childList: true, subtree: true });
+
+    // Initialize
+    renderColors();
+    renderWheels();
+    renderTrimThumbs();
+    renderPrepayRows();
+    makeKeyboardCards();
+    updateAutopilot(state.autopilotIdx);
+
+    // ---------- 설정 저장 (이 브라우저에만, localStorage) ----------
+    const SAVE_KEY = 'modelYCalc.settings.v1';
+    const SAVE_FIELDS = ['trimIdx', 'colorIdx', 'hasInterior', 'wheelIdx', 'view', 'autopilotIdx', 'fsdLump', 'termIdx', 'cashbackIdx', 'regIdx',
+        'subsidyMode', 'subsidy', 'downPayment', 'insurance', 'tinting', 'ppf', 'glassCoating', 'soundproofing', 'leatherCoating', 'registrationFee', 'others', 'prepayMode', 'prepays', 'ppAtMonth', 'detailOpen', 'customRate', 'ppSumOpen'];
+    var restoring = true;          // 처음 불러오는 동안은 저장하지 않음 (var: 이 줄보다 먼저 불려도 오류 없게)
+    function saveSettings() {
+        if (restoring !== false) return;
+        try {
+            const o = {}; SAVE_FIELDS.forEach(k => o[k] = state[k]);
+            localStorage.setItem(SAVE_KEY, JSON.stringify(o));
+            const n = document.getElementById('saveNote');
+            if (n) n.innerText = '설정 자동 저장됨 · ' + new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+        } catch (e) { /* 저장 못 하는 환경(사생활 보호 창 등)이면 그냥 넘어감 */ }
+    }
+    function setNumber(field, v) {
+        state[field] = v;
+        const i = document.getElementById(field + 'Input'), sl = document.getElementById(field + 'Slider');
+        if (i) i.value = Number(v).toLocaleString();
+        if (sl) sl.value = v;
+    }
+    function loadSettings() {
+        let o = null;
+        try { o = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) { o = null; }
+        if (!o || typeof o !== 'object') return false;
+        try {
+            state.subsidyMode = o.subsidyMode ?? 0;
+            document.querySelectorAll('#subsidyModeContainer label').forEach((el, i) => el.classList.toggle('active', i === state.subsidyMode));
+            updateTrim(o.trimIdx ?? 2);
+            updateColor(o.colorIdx ?? 0);
+            if (!!o.hasInterior !== state.hasInterior) toggleInterior();
+            state.wheelIdx = o.wheelIdx ?? 0; renderWheels();
+            if (!!o.fsdLump !== state.fsdLump) toggleFsdLump();
+            updateAutopilot(o.autopilotIdx ?? 0);
+            if (o.customRate > 0) { state.customRate = o.customRate; document.getElementById('customRateInput').value = o.customRate; }
+            updateTerm(o.termIdx ?? 0);
+            updateCashback(o.cashbackIdx ?? 0);
+            updateReg(o.regIdx ?? 0);
+            if (o.view) state.view = o.view;
+            ['insurance', 'tinting', 'ppf', 'glassCoating', 'soundproofing', 'leatherCoating', 'registrationFee', 'others'].forEach(k => { if (typeof o[k] === 'number') setNumber(k, o[k]); });
+            if (typeof o.subsidy === 'number') setSubsidy(o.subsidy);
+            if (typeof o.downPayment === 'number') setNumber('downPayment', o.downPayment);
+            if (Array.isArray(o.prepays)) state.prepays = o.prepays.map(x => ({ m: +x.m || 0, a: +x.a || 0 }));
+            if (o.prepayMode === 0 || o.prepayMode === 1) { state.prepayMode = o.prepayMode; document.querySelectorAll('#ppModeContainer label').forEach((el, k) => el.classList.toggle('active', k === o.prepayMode)); }
+            if (o.detailOpen === false) toggleDetail(false);
+            if (o.ppSumOpen === false) togglePpSummary(false);
+            if (typeof o.ppAtMonth === 'number') document.getElementById('ppAtMonth').value = o.ppAtMonth;
+            renderPrepayRows();
+            calculate();
+            const n = document.getElementById('saveNote');
+            if (n) n.innerText = '저장해 둔 설정을 불러왔습니다. 바꾸면 자동 저장됩니다.';
+            return true;
+        } catch (e) { return false; }
+    }
+    function resetSettings() {
+        try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+        location.reload();
+    }
+
+    // 내 계약 기본값 (2026.11.12): Model Y L · Stealth Grey · 젠 그레이 시트 · FSD 일시불 · 선수금 1,000만원
+    function applyMyContract() {
+        updateTrim(2);                       // Model Y L (서울 보조금 자동)
+        updateColor(0);                      // Stealth Grey
+        if (!state.hasInterior) toggleInterior();   // 젠 그레이
+        updateAutopilot(2);
+        if (!state.fsdLump) toggleFsdLump(); // FSD 일시불
+        state.downPayment = 10000000;
+        document.getElementById('downPaymentSlider').value = 10000000;
+        document.getElementById('downPaymentInput').value = (10000000).toLocaleString();
+        calculate();
+    }
+    if (!loadSettings()) applyMyContract();
+    restoring = false;
+    saveSettings();
+
+</script>
+</body>
+</html>
