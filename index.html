@@ -616,7 +616,6 @@
                 
                 <div class="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-sm text-gray-300">
                     <label class="inline-flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="incContractChk" onchange="setInclude('incContract', this.checked)" class="inc-chk"> 계약금 넣어서 보기 <span class="text-xs text-gray-500">(500만 · 이미 냄)</span></label>
-                    <label class="inline-flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="incInterestChk" onchange="setInclude('incInterest', this.checked)" class="inc-chk" checked> 할부 이자 넣어서 보기</label>
                 </div>
                 <div class="p-4 bg-gray-900 rounded-xl border border-gray-700">
                     <div class="text-sm font-medium text-gray-400 mb-1">① 인도 전까지 필요한 현금</div>
@@ -675,7 +674,7 @@
                         <span class="text-green-400 font-bold" id="cashbackOutput">- ₩0</span>
                     </div>
                     <div class="flex justify-between items-center pt-3 border-t border-gray-700">
-                        <span class="text-white text-sm font-bold">총 실부담 <span id="totalCostTag">(이자 포함)</span><br><span class="text-xs text-gray-500 font-normal" id="totalCostDesc">① + 월 납입 전부 + ② − ③</span></span>
+                        <span class="text-white text-sm font-bold">총 실부담 <span id="totalCostTag">(이자 포함)</span><br><span class="text-xs text-gray-500 font-normal" id="totalCostDesc">① + 월 납입 전부 + ② − ③</span><br><label class="inline-flex items-center gap-1.5 cursor-pointer mt-1 text-xs text-gray-300 font-normal"><input type="checkbox" id="incInterestChk" onchange="setInclude('incInterest', this.checked)" class="inc-chk" checked> 할부 이자 넣어서 보기</label></span>
                         <span class="text-white font-bold text-lg" id="totalCostOutput">₩0</span>
                     </div>
                 </div></div><!-- /detailBody -->
