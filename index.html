@@ -21,6 +21,7 @@
         
         /* Custom Radio/Checkbox Hiding */
         input[type="radio"], input[type="checkbox"] { display: none; }
+        input.inc-chk { display: inline-block !important; width: 18px; height: 18px; accent-color: #3E6AE1; cursor: pointer; }
         
         /* Interactive Cards */
         .select-card { border: 1px solid #333; background-color: #111; cursor: pointer; }
@@ -613,9 +614,13 @@
                     <div class="text-xs text-gray-400 mt-2 hidden" id="fsdMonthlyOutput"></div>
                 </div>
                 
+                <div class="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-sm text-gray-300">
+                    <label class="inline-flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="incContractChk" onchange="setInclude('incContract', this.checked)" class="inc-chk"> 계약금 넣어서 보기 <span class="text-xs text-gray-500">(500만 · 이미 냄)</span></label>
+                    <label class="inline-flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="incInterestChk" onchange="setInclude('incInterest', this.checked)" class="inc-chk" checked> 할부 이자 넣어서 보기</label>
+                </div>
                 <div class="p-4 bg-gray-900 rounded-xl border border-gray-700">
                     <div class="text-sm font-medium text-gray-400 mb-1">① 인도 전까지 필요한 현금</div>
-                    <div class="text-xs text-gray-500 mb-2">계약금 + 선수금 + 취득세 + 등록비 + 보험료 (등록은 인도 전에 함)</div>
+                    <div class="text-xs text-gray-500 mb-2" id="initialCashDesc">선수금 + 취득세 + 등록비 + 보험료 (등록은 인도 전에 함)</div>
                     <div class="text-2xl font-bold text-white text-right" id="initialCashOutput">₩0</div>
                 </div>
                 <div class="mt-3 space-y-2 text-sm">
@@ -638,7 +643,7 @@
                 
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-400 text-sm">계약금 (고정)</span>
+                        <span class="text-gray-400 text-sm">계약금 <span class="text-xs text-gray-500" id="contractRowNote">(이미 냄 · 합계에서 뺌)</span></span>
                         <span class="text-white font-medium">₩5,000,000</span>
                     </div>
                     <div class="flex justify-between items-center">
@@ -670,7 +675,7 @@
                         <span class="text-green-400 font-bold" id="cashbackOutput">- ₩0</span>
                     </div>
                     <div class="flex justify-between items-center pt-3 border-t border-gray-700">
-                        <span class="text-white text-sm font-bold">총 실부담 (이자 포함)<br><span class="text-xs text-gray-500 font-normal">① + 월 납입 전부 + ② − ③</span></span>
+                        <span class="text-white text-sm font-bold">총 실부담 <span id="totalCostTag">(이자 포함)</span><br><span class="text-xs text-gray-500 font-normal" id="totalCostDesc">① + 월 납입 전부 + ② − ③</span></span>
                         <span class="text-white font-bold text-lg" id="totalCostOutput">₩0</span>
                     </div>
                 </div></div><!-- /detailBody -->
@@ -805,6 +810,8 @@
         wheelIdx: 0,
         customRate: 0,
         prepayMode: 0,
+        incContract: false,     // 계약금: 이미 냈으니 기본은 빼고 봄
+        incInterest: true,      // 할부 이자: 기본은 넣고 봄
         prepays: [{ m: 12, a: 5000000 }],
         fsdLump: false,
         view: 'FRONT34',
@@ -1219,10 +1226,16 @@
 
         // 6. 시점별 돈: ① 인도 전(등록 전) ② 인도 후 ③ 나중에 돌려받음
         const afterCosts = state.tinting + state.ppf + state.glassCoating + state.soundproofing + state.leatherCoating + state.others;
-        const initialCash = CONTRACT_FEE + state.downPayment + tax + state.registrationFee + state.insurance;   // ① 계약금+선수금+취득세+등록비+보험료
+        const initialCash = (state.incContract ? CONTRACT_FEE : 0) + state.downPayment + tax + state.registrationFee + state.insurance;   // ① 계약금+선수금+취득세+등록비+보험료
         const sched = simulateLoan(principal, rateNow(), n, [], 0);   // 실제 상환 일정(마지막 회차 끝수 정리 포함)
         const totalInterest = sched.interest;
-        const totalCost = initialCash + sched.paid + afterCosts - cashback;   // 총 실부담(이자 포함)
+        const totalCost = initialCash + sched.paid - (state.incInterest ? 0 : totalInterest) + afterCosts - cashback;   // 총 실부담 (체크에 따라 계약금·이자 넣고 빼기)
+        document.getElementById('initialCashDesc').innerText = (state.incContract ? '계약금 + ' : '') + '선수금 + 취득세 + 등록비 + 보험료 (등록은 인도 전에 함)' + (state.incContract ? '' : ' · 계약금은 이미 내서 뺌');
+        document.getElementById('contractRowNote').innerText = state.incContract ? '(이미 냄 · 합계에 넣어서 보는 중)' : '(이미 냄 · 합계에서 뺌)';
+        document.getElementById('totalCostTag').innerText = state.incInterest ? '(이자 포함)' : '(이자 뺌)';
+        document.getElementById('totalCostDesc').innerText = '① + ' + (state.incInterest ? '월 납입 전부' : '할부 원금') + ' + ② − ③';
+        document.getElementById('incContractChk').checked = !!state.incContract;
+        document.getElementById('incInterestChk').checked = !!state.incInterest;
 
         // Output formatting
         document.getElementById('totalPriceOutput').innerText = formatWon(totalPrice);
@@ -1348,6 +1361,9 @@
     function rangesHtml(R, cls) {
         return payRanges(R).map(g => `<div class="flex justify-between text-sm"><span class="text-gray-400">${g.from === g.to ? g.from + '개월째' : g.from + '~' + g.to + '개월'}</span><span class="${cls || 'text-white font-medium'}">${formatWon(g.pay)}</span></div>`).join('');
     }
+    // 총 실부담 = 앞쪽 비용(base) + 할부로 낸 돈 − (이자 빼고 보기면 이자)
+    function costOf(base, R) { return base + R.paid - (state.incInterest ? 0 : R.interest); }
+    function setInclude(key, on) { state[key] = !!on; calculate(); }
     function renderPpSummary(A, B, base, n) {
         const body = document.getElementById('ppSumBody'); if (!body) return;
         const W = formatWon, plan = readPrepays().filter(x => x.m >= 1 && x.m < n && x.a > 0).sort((a, b) => a.m - b.m);
@@ -1358,7 +1374,7 @@
         body.innerHTML =
             '<div class="text-xs text-gray-500">개월별 월 납입</div>' + rangesHtml(B) +
             `<div class="flex justify-between text-sm pt-1"><span class="text-gray-400">완납</span><span class="text-white font-medium">${B.months}개월${mode === 1 && B.months < A.months ? ` (원래 ${A.months}개월)` : ''}</span></div>` +
-            `<div class="flex justify-between text-sm"><span class="text-gray-400">총 실부담 (계획 반영)</span><span class="text-white font-bold">${W(base + B.paid)}</span></div>` +
+            `<div class="flex justify-between text-sm"><span class="text-gray-400">총 실부담 (계획 반영)</span><span class="text-white font-bold">${W(costOf(base, B))}</span></div>` +
             `<div class="text-[11px] text-gray-500">처리 방식: ${mode === 0 ? '기간 유지 · 월 납입 줄이기' : '월 납입 유지 · 기간 줄이기'} (계산기에서 변경)</div>`;
     }
 
@@ -1374,7 +1390,7 @@
         const card = (title, R, hi) => `
             <div class="rounded-xl border ${hi ? 'border-blue-500' : 'border-gray-800'} p-4">
                 <div class="text-xs text-gray-400 mb-1">${title}</div>
-                <div class="text-lg font-bold text-white">${W(base + R.paid)}</div>
+                <div class="text-lg font-bold text-white">${W(costOf(base, R))}</div>
                 <div class="text-[11px] text-gray-500 mb-2">총 실부담</div>
                 <div class="text-xs text-gray-400 space-y-0.5">
                     <div class="flex justify-between"><span>할부 이자 합계</span><span class="text-white">${W(R.interest)}</span></div>
@@ -1417,7 +1433,7 @@
             const r = rate / 12;
             const th = x => `<th class="text-right font-normal pb-1">${x}</th>`;
             let t = `<thead><tr class="text-xs text-gray-500"><th class="text-left font-normal pb-1">단계</th>${th('갚는 돈')}${th('갚은 뒤 남은 원금')}${th('이후 월 납입')}${th('완납')}${th('총 실부담')}</tr></thead><tbody>`;
-            t += `<tr class="border-t border-gray-800"><td class="py-1.5 text-gray-400">처음 (중도상환 없음)</td><td class="text-right text-gray-500">-</td><td class="text-right text-gray-300">${N(principal)}</td><td class="text-right text-white font-medium">${N(A.firstPay)}</td><td class="text-right text-gray-300">${A.months}개월</td><td class="text-right text-gray-300">${N(base + A.paid)}</td></tr>`;
+            t += `<tr class="border-t border-gray-800"><td class="py-1.5 text-gray-400">처음 (중도상환 없음)</td><td class="text-right text-gray-500">-</td><td class="text-right text-gray-300">${N(principal)}</td><td class="text-right text-white font-medium">${N(A.firstPay)}</td><td class="text-right text-gray-300">${A.months}개월</td><td class="text-right text-gray-300">${N(costOf(base, A))}</td></tr>`;
             let prevPay = A.firstPay, prevMonths = A.months;
             plan.forEach((x, k) => {
                 const R = simulateLoan(principal, rate, n, plan.slice(0, k + 1), mode);
@@ -1426,7 +1442,7 @@
                 const pay = after > 0 ? (mode === 0 ? pmtOf(after, r, n - x.m) : A.firstPay) : 0;
                 const dPay = pay ? (pay - prevPay ? `<div class="text-[11px] text-green-400">${N(pay - prevPay)}</div>` : '<div class="text-[11px] text-gray-500">그대로</div>') : '';
                 const dMon = R.months - prevMonths ? `<div class="text-[11px] text-green-400">${R.months - prevMonths}개월</div>` : '<div class="text-[11px] text-gray-500">그대로</div>';
-                t += `<tr class="border-t border-gray-800 bg-blue-950/40"><td class="py-1.5 text-white font-medium">${k + 1}. ${x.m}개월 뒤<div class="text-[11px] text-gray-500 font-normal">${x.m + 1}개월째부터 적용</div></td><td class="text-right text-white">${N(x.a)}</td><td class="text-right text-gray-300">${N(after)}</td><td class="text-right text-white font-bold">${pay ? N(pay) : '완납'}${dPay}</td><td class="text-right text-white font-medium">${R.months}개월${dMon}</td><td class="text-right text-white">${N(base + R.paid)}</td></tr>`;
+                t += `<tr class="border-t border-gray-800 bg-blue-950/40"><td class="py-1.5 text-white font-medium">${k + 1}. ${x.m}개월 뒤<div class="text-[11px] text-gray-500 font-normal">${x.m + 1}개월째부터 적용</div></td><td class="text-right text-white">${N(x.a)}</td><td class="text-right text-gray-300">${N(after)}</td><td class="text-right text-white font-bold">${pay ? N(pay) : '완납'}${dPay}</td><td class="text-right text-white font-medium">${R.months}개월${dMon}</td><td class="text-right text-white">${N(costOf(base, R))}</td></tr>`;
                 if (pay) prevPay = pay;
                 prevMonths = R.months;
             });
@@ -1458,7 +1474,7 @@
     // ---------- 설정 저장 (이 브라우저에만, localStorage) ----------
     const SAVE_KEY = 'modelYCalc.settings.v1';
     const SAVE_FIELDS = ['trimIdx', 'colorIdx', 'hasInterior', 'wheelIdx', 'view', 'autopilotIdx', 'fsdLump', 'termIdx', 'cashbackIdx', 'regIdx',
-        'subsidyMode', 'subsidy', 'downPayment', 'insurance', 'tinting', 'ppf', 'glassCoating', 'soundproofing', 'leatherCoating', 'registrationFee', 'others', 'prepayMode', 'prepays', 'ppAtMonth', 'detailOpen', 'customRate', 'ppSumOpen'];
+        'subsidyMode', 'subsidy', 'downPayment', 'insurance', 'tinting', 'ppf', 'glassCoating', 'soundproofing', 'leatherCoating', 'registrationFee', 'others', 'prepayMode', 'prepays', 'ppAtMonth', 'detailOpen', 'customRate', 'ppSumOpen', 'incContract', 'incInterest'];
     var restoring = true;          // 처음 불러오는 동안은 저장하지 않음 (var: 이 줄보다 먼저 불려도 오류 없게)
     function saveSettings() {
         if (restoring !== false) return;
@@ -1498,6 +1514,8 @@
             if (typeof o.downPayment === 'number') setNumber('downPayment', o.downPayment);
             if (Array.isArray(o.prepays)) state.prepays = o.prepays.map(x => ({ m: +x.m || 0, a: +x.a || 0 }));
             if (o.prepayMode === 0 || o.prepayMode === 1) { state.prepayMode = o.prepayMode; document.querySelectorAll('#ppModeContainer label').forEach((el, k) => el.classList.toggle('active', k === o.prepayMode)); }
+            if (typeof o.incContract === 'boolean') state.incContract = o.incContract;
+            if (typeof o.incInterest === 'boolean') state.incInterest = o.incInterest;
             if (o.detailOpen === false) toggleDetail(false);
             if (o.ppSumOpen === false) togglePpSummary(false);
             if (typeof o.ppAtMonth === 'number') document.getElementById('ppAtMonth').value = o.ppAtMonth;
